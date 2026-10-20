@@ -117,16 +117,18 @@
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
         }
 
-        /* Các phần của cây ẩn/hiện theo tiến trình sinh trưởng */
-        .growth-part {
+        /* Các giai đoạn cây ẩn/hiện mượt mà */
+        .stage-group {
             opacity: 0;
-            transform: scale(0.2);
+            transform: scale(0.3);
             transform-origin: bottom center;
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none;
         }
-        .growth-part.active {
+        .stage-group.active {
             opacity: 1;
             transform: scale(1);
+            display: inline;
         }
 
         /* Hiệu ứng nhân vật chạy vòng quanh cây chân thật */
@@ -294,43 +296,54 @@
             <!-- Mô hình cây Vector SVG siêu chi tiết từng ngọn lá -->
             <div class="tree-vector-box" id="treeBox">
                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Giai đoạn 0: Đất và Hạt giống -->
-                    <ellipse cx="100" cy="180" rx="60" ry="12" fill="#38220f" opacity="0.8"/>
-                    <circle id="phase-0" class="growth-part active" cx="100" cy="172" r="6" fill="#8d5b4c"/>
+                    <!-- Đất nền chung -->
+                    <ellipse cx="100" cy="180" rx="65" ry="14" fill="#2d1e12" opacity="0.9"/>
 
-                    <!-- Giai đoạn 1: Mầm non nhô lên -->
-                    <path id="phase-1" class="growth-part" d="M100,175 Q100,150 90,140 M90,140 Q85,135 80,140 Q90,145 90,140" fill="none" stroke="#52b788" stroke-width="4" stroke-linecap="round"/>
-                    <path id="phase-1-leaf" class="growth-part" d="M90,140 Q80,130 85,120 Q95,130 90,140" fill="#74c69d"/>
+                    <!-- Giai đoạn 0: Hạt giống (0%) -->
+                    <g id="stage-0" class="stage-group active">
+                        <circle cx="100" cy="173" r="7" fill="#8d5b4c"/>
+                        <circle cx="98" cy="171" r="2" fill="#b08968" opacity="0.7"/>
+                    </g>
 
-                    <!-- Giai đoạn 2: Cây non đâm chồi nảy lộc (Thân nhỏ & tán lá đầu tiên) -->
-                    <path id="phase-2-trunk" class="growth-part" d="M95,175 L95,130 Q95,120 100,110 L105,120 L105,175 Z" fill="#6f4e37"/>
-                    <circle id="phase-2-leaves" class="growth-part" cx="100" cy="105" r="22" fill="#52b788"/>
-                    <circle cx="92" cy="100" r="12" fill="#74c69d" class="growth-part phase-2-sub"/>
-                    <circle cx="108" cy="100" r="12" fill="#40916c" class="growth-part phase-2-sub"/>
+                    <!-- Giai đoạn 1: Mầm non nhô lên (25%) -->
+                    <g id="stage-1" class="stage-group">
+                        <path d="M100,178 Q100,150 90,135" fill="none" stroke="#52b788" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M90,135 Q75,125 82,115 Q95,125 90,135" fill="#74c69d"/>
+                    </g>
 
-                    <!-- Giai đoạn 3: Cây cứng cáp, cành nhánh tỏa rộng -->
-                    <path id="phase-3-branches" class="growth-part" d="M92,140 Q70,120 60,110 M108,140 Q130,120 140,110" fill="none" stroke="#6f4e37" stroke-width="6" stroke-linecap="round"/>
-                    <circle id="phase-3-canopy1" class="growth-part" cx="60" cy="105" r="18" fill="#52b788"/>
-                    <circle id="phase-3-canopy2" class="growth-part" cx="140" cy="105" r="18" fill="#52b788"/>
-                    <circle id="phase-3-canopy3" class="growth-part" cx="100" cy="85" r="28" fill="#40916c"/>
+                    <!-- Giai đoạn 2: Cây non đâm chồi nảy lộc (50%) -->
+                    <g id="stage-2" class="stage-group">
+                        <path d="M95,180 L95,130 Q95,115 100,105 L105,115 L105,180 Z" fill="#6f4e37"/>
+                        <circle cx="100" cy="98" r="24" fill="#52b788"/>
+                        <circle cx="88" cy="92" r="14" fill="#74c69d"/>
+                        <circle cx="112" cy="92" r="14" fill="#40916c"/>
+                    </g>
 
-                    <!-- Giai đoạn 4: Cây đại thụ trưởng thành toàn diện (Từng ngọn lá chi tiết sắc nét) -->
-                    <g id="phase-4-mature" class="growth-part">
-                        <!-- Thân cây chính lớn & rễ -->
-                        <path d="M85,180 L88,120 Q88,100 100,90 Q112,100 112,120 L115,180 Z" fill="#5c4033"/>
-                        <path d="M88,150 Q70,165 60,175 M112,150 Q130,165 140,175" fill="none" stroke="#4a3323" stroke-width="7" stroke-linecap="round"/>
-                        <!-- Các tầng tán lá chi tiết tỉ mỉ từng ngọn -->
-                        <circle cx="100" cy="75" r="38" fill="#2d6a4f"/>
-                        <circle cx="75" cy="90" r="30" fill="#40916c"/>
-                        <circle cx="125" cy="90" r="30" fill="#52b788"/>
-                        <circle cx="60" cy="115" r="24" fill="#74c69d"/>
-                        <circle cx="140" cy="115" r="24" fill="#40916c"/>
-                        <circle cx="90" cy="60" r="22" fill="#74c69d"/>
-                        <circle cx="110" cy="60" r="22" fill="#52b788"/>
-                        <!-- Điểm nhấn ánh sáng ngọn lá 5D -->
-                        <circle cx="95" cy="55" r="6" fill="#b7e4c7" opacity="0.8"/>
-                        <circle cx="65" cy="80" r="5" fill="#b7e4c7" opacity="0.8"/>
-                        <circle cx="135" cy="80" r="5" fill="#b7e4c7" opacity="0.8"/>
+                    <!-- Giai đoạn 3: Cây cứng cáp tỏa cành nhánh (75%) -->
+                    <g id="stage-3" class="stage-group">
+                        <path d="M92,175 L94,120 Q94,100 100,90 Q106,100 106,120 L108,175 Z" fill="#5c4033"/>
+                        <path d="M94,135 Q72,115 62,105 M106,135 Q128,115 138,105" fill="none" stroke="#6f4e37" stroke-width="6" stroke-linecap="round"/>
+                        <circle cx="62" cy="100" r="20" fill="#52b788"/>
+                        <circle cx="138" cy="100" r="20" fill="#52b788"/>
+                        <circle cx="100" cy="78" r="30" fill="#40916c"/>
+                    </g>
+
+                    <!-- Giai đoạn 4: Đại thụ 5D chi tiết toàn diện (100%) -->
+                    <g id="stage-4" class="stage-group">
+                        <path d="M85,180 L88,110 Q88,85 100,75 Q112,85 112,110 L115,180 Z" fill="#4a3323"/>
+                        <path d="M88,140 Q65,155 52,168 M112,140 Q135,155 148,168" fill="none" stroke="#3d2817" stroke-width="8" stroke-linecap="round"/>
+                        <!-- Từng ngọn lá chi tiết sắc nét -->
+                        <circle cx="100" cy="62" r="40" fill="#2d6a4f"/>
+                        <circle cx="72" cy="78" r="32" fill="#40916c"/>
+                        <circle cx="128" cy="78" r="32" fill="#52b788"/>
+                        <circle cx="52" cy="102" r="26" fill="#74c69d"/>
+                        <circle cx="148" cy="102" r="26" fill="#40916c"/>
+                        <circle cx="88" cy="48" r="24" fill="#74c69d"/>
+                        <circle cx="112" cy="48" r="24" fill="#52b788"/>
+                        <!-- Đốm sáng phản chiếu 5D -->
+                        <circle cx="94" cy="42" r="6" fill="#b7e4c7" opacity="0.9"/>
+                        <circle cx="60" cy="68" r="5" fill="#b7e4c7" opacity="0.9"/>
+                        <circle cx="140" cy="68" r="5" fill="#b7e4c7" opacity="0.9"/>
                     </g>
                 </svg>
             </div>
@@ -341,7 +354,7 @@
         <div class="progress-bar-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        <p style="font-size: 0.75rem; opacity: 0.8;" id="statusText">Mức độ sinh trưởng: 0% (Hạt giống đất)</p>
+        <p style="font-size: 0.75rem; opacity: 0.8;" id="statusText">Mức độ sinh trưởng: 0% (Hạt giống dưới đất)</p>
 
         <!-- Bảng vinh danh Logo trường & Nhóm 7 -->
         <div class="final-celebration" id="finalBox">
@@ -385,46 +398,42 @@
             document.getElementById('msg-4')
         ];
 
-        const parts = [
-            document.getElementById('phase-0'),
-            document.querySelectorAll('#phase-1, #phase-1-leaf'),
-            document.querySelectorAll('#phase-2-trunk, #phase-2-leaves, .phase-2-sub'),
-            document.querySelectorAll('#phase-3-branches, #phase-3-canopy1, #phase-3-canopy2, #phase-3-canopy3'),
-            document.getElementById('phase-4-mature')
+        const stages = [
+            document.getElementById('stage-0'),
+            document.getElementById('stage-1'),
+            document.getElementById('stage-2'),
+            document.getElementById('stage-3'),
+            document.getElementById('stage-4')
         ];
 
         const phaseTexts = [
             "Hạt giống nằm dưới đất (0%)",
-            "Mầm non cựa mình nhô lên (25%)",
+            "Mầm non nhô lên (25%)",
             "Cây non đâm chồi nảy lộc (50%)",
             "Cây cứng cáp tỏa cành nhánh (75%)",
             "CÂY ĐẠI THỤ 5D TRƯỞNG THÀNH CHI TIẾT TOÀN DIỆN!"
         ];
 
-        let growthStage = 0;
+        let currentStep = 0;
 
         // Click tương tác tưới cây sinh trưởng chi tiết
         scene.addEventListener('click', () => {
-            if (growthStage < 100) {
-                growthStage += 25;
-                if (growthStage > 100) growthStage = 100;
+            if (currentStep < 4) {
+                currentStep++;
+                let progressPercent = currentStep * 25;
                 
-                progressBar.style.width = growthStage + '%';
+                progressBar.style.width = progressPercent + '%';
 
-                let stageIndex = growthStage / 25; // 0, 1, 2, 3, 4
-                
-                // Cập nhật trạng thái hiển thị các phần SVG chi tiết cây
-                parts.forEach((part, index) => {
-                    if (index <= stageIndex) {
-                        if (NodeList.prototype.isPrototypeOf(part) || Array.isArray(part)) {
-                            part.forEach(p => p.classList.add('active'));
-                        } else {
-                            part.classList.add('active');
-                        }
+                // Chuyển đổi trạng thái hiển thị các nhóm SVG chính xác
+                stages.forEach((st, idx) => {
+                    if (idx === currentStep) {
+                        st.classList.add('active');
+                    } else {
+                        st.classList.remove('active');
                     }
                 });
 
-                statusText.textContent = `Mức độ sinh trưởng: ${growthStage}% (${phaseTexts[stageIndex]})`;
+                statusText.textContent = `Mức độ sinh trưởng: ${progressPercent}% (${phaseTexts[currentStep]});`;
                 
                 // Hiệu ứng nảy phóng to mượt mà
                 treeBox.style.transform = 'scale(1.3) translateY(-5px)';
@@ -433,17 +442,17 @@
                 }, 250);
 
                 // Kích hoạt nhân vật chạy vòng quanh cây khi đang nuôi dưỡng
-                if (growthStage > 0 && growthStage < 100) {
+                if (currentStep > 0 && currentStep < 4) {
                     runner.classList.add('running');
                 }
 
                 // Hiện dần các thông điệp 5D
-                if (growthStage >= 25) messages[0].classList.add('show');
-                if (growthStage >= 50) messages[1].classList.add('show');
-                if (growthStage >= 75) messages[2].classList.add('show');
+                if (currentStep >= 1) messages[0].classList.add('show');
+                if (currentStep >= 2) messages[1].classList.add('show');
+                if (currentStep >= 3) messages[2].classList.add('show');
 
-                // Khi đạt 100% hoàn thành
-                if (growthStage === 100) {
+                // Khi đạt 100% hoàn thành (Bước 4)
+                if (currentStep === 4) {
                     messages[3].classList.add('show');
                     instructionText.textContent = "✨ Tuyệt vời! Rừng 5D đã được phục hồi hoàn toàn!";
                     runner.classList.remove('running');
@@ -455,25 +464,21 @@
 
         // Nút Xem lại hiệu ứng từ đầu
         replayBtn.addEventListener('click', () => {
-            growthStage = 0;
+            currentStep = 0;
             progressBar.style.width = '0%';
-            statusText.textContent = 'Mức độ sinh trưởng: 0% (Hạt giống đất)';
+            statusText.textContent = 'Mức độ sinh trưởng: 0% (Hạt giống dưới đất)';
             instructionText.textContent = '👉 Nhấp chuột vào đây để tưới nước nuôi dưỡng cây lớn!';
             finalBox.style.display = 'none';
             runner.style.display = 'block';
             runner.classList.remove('running');
             messages.forEach(msg => msg.classList.remove('show'));
 
-            // Reset tất cả các phần cây về ẩn
-            parts.forEach((part, index) => {
-                if (index === 0) {
-                    part.classList.add('active');
+            // Reset hiển thị SVG về hạt giống ban đầu
+            stages.forEach((st, idx) => {
+                if (idx === 0) {
+                    st.classList.add('active');
                 } else {
-                    if (NodeList.prototype.isPrototypeOf(part) || Array.isArray(part)) {
-                        part.forEach(p => p.classList.remove('active'));
-                    } else {
-                        part.classList.remove('active');
-                    }
+                    st.classList.remove('active');
                 }
             });
         });
