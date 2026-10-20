@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hành Trình Xanh - Trường THCS Trần Hải Phụng</title>
+    <title>Hành Trình Xanh 5D - Trường THCS Trần Hải Phụng</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: radial-gradient(circle at center, #1b4332 0%, #081c15 100%);
             color: #fff;
             min-height: 100vh;
             overflow-x: hidden;
@@ -24,8 +24,8 @@
             padding: 15px;
         }
 
-        /* Hiệu ứng trời mưa */
-        .rain {
+        /* Hiệu ứng lá cây rơi 5D chân thật */
+        .leaves-container {
             position: fixed;
             top: 0;
             left: 0;
@@ -34,46 +34,46 @@
             pointer-events: none;
             z-index: 1;
         }
-        .drop {
+        .leaf {
             position: absolute;
-            background: rgba(255, 255, 255, 0.4);
-            width: 1px;
-            height: 20px;
-            opacity: 0.7;
-            animation: fall linear infinite;
+            background: linear-gradient(135deg, #74c69d, #2d6a4f);
+            border-radius: 150% 0 150% 0;
+            opacity: 0.8;
+            animation: leafFall linear infinite;
         }
-        @keyframes fall {
-            0% { transform: translateY(-20px); }
-            100% { transform: translateY(105vh); }
+        @keyframes leafFall {
+            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); }
+            50% { transform: translateY(50vh) translateX(60px) rotate(180deg); }
+            100% { transform: translateY(110vh) translateX(-40px) rotate(360deg); }
         }
 
         .container {
             position: relative;
             z-index: 2;
             text-align: center;
-            max-width: 850px;
+            max-width: 900px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(82, 183, 136, 0.3);
             padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
         }
 
         h1 {
-            color: #a8ff78;
-            font-size: 1.7rem;
+            color: #95d5b2;
+            font-size: 1.8rem;
             margin-bottom: 2px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 12px rgba(82, 183, 136, 0.6);
         }
 
         .school-name {
-            font-size: 0.95rem;
-            color: #34d399;
+            font-size: 1rem;
+            color: #d8f3dc;
             font-weight: bold;
             margin-bottom: 8px;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         p.subtitle {
@@ -82,73 +82,85 @@
             margin-bottom: 10px;
         }
 
-        /* Khung tương tác cây & nhân vật */
+        /* Khung tương tác 5D */
         .interactive-scene {
             position: relative;
             width: 100%;
-            height: 270px;
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: 15px;
+            height: 310px;
+            background: radial-gradient(circle, rgba(45, 106, 79, 0.5) 0%, rgba(5, 20, 15, 0.9) 100%);
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: grab;
+            cursor: pointer;
             overflow: hidden;
-            border: 2px dashed rgba(168, 255, 120, 0.4);
-            perspective: 1000px;
-        }
-        .interactive-scene:active {
-            cursor: grabbing;
+            border: 2px solid rgba(82, 183, 136, 0.6);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
         }
 
-        #tree-object {
-            font-size: 70px;
-            transition: transform 0.3s ease, font-size 0.5s ease;
-            user-select: none;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+        /* Vùng hiển thị cây Vector chi tiết từng ngọn lá */
+        .tree-vector-box {
+            position: relative;
+            width: 180px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 3;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Nhân vật bước ra từ 2 bên */
-        .character {
+        svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+        }
+
+        /* Các phần của cây ẩn/hiện theo tiến trình sinh trưởng */
+        .growth-part {
+            opacity: 0;
+            transform: scale(0.2);
+            transform-origin: bottom center;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .growth-part.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Hiệu ứng nhân vật chạy vòng quanh cây chân thật */
+        .runner-character {
             position: absolute;
             font-size: 35px;
-            bottom: 30px;
             opacity: 0;
-            transition: all 1s ease;
             z-index: 4;
+            pointer-events: none;
         }
-        #char-left { left: -50px; }
-        #char-right { right: -50px; }
-
-        .character.active-left {
-            left: 30%;
+        .runner-character.running {
             opacity: 1;
-            animation: bounceChar 1s infinite alternate;
-        }
-        .character.active-right {
-            right: 30%;
-            opacity: 1;
-            animation: bounceChar 1s infinite alternate;
+            animation: runAroundTree 2.2s linear infinite;
         }
 
-        @keyframes bounceChar {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-8px); }
+        @keyframes runAroundTree {
+            0% { transform: translate(-130px, 50px) scaleX(1); }
+            25% { transform: translate(0px, 80px) scaleX(1); }
+            50% { transform: translate(130px, 50px) scaleX(-1); }
+            75% { transform: translate(0px, -20px) scaleX(-1); }
+            100% { transform: translate(-130px, 50px) scaleX(1); }
         }
 
-        /* Thẻ thông điệp 3D bảo vệ rừng */
+        /* Thông điệp 5D nổi bật */
         .message-3d {
             position: absolute;
-            background: rgba(16, 185, 129, 0.25);
-            border: 1px solid #34d399;
-            color: #d1fae5;
-            padding: 5px 12px;
+            background: rgba(45, 106, 79, 0.75);
+            border: 1px solid #52b788;
+            color: #d8f3dc;
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             pointer-events: none;
             opacity: 0;
             transform: scale(0.5);
@@ -159,58 +171,62 @@
             opacity: 1;
             transform: scale(1);
         }
-        #msg-1 { top: 10px; left: 10px; }
-        #msg-2 { top: 10px; right: 10px; }
-        #msg-3 { bottom: 10px; left: 15px; }
-        #msg-4 { bottom: 10px; right: 15px; }
+        #msg-1 { top: 12px; left: 15px; }
+        #msg-2 { top: 12px; right: 15px; }
+        #msg-3 { bottom: 12px; left: 15px; }
+        #msg-4 { bottom: 12px; right: 15px; }
 
         .instructions {
-            margin-top: 8px;
+            margin-top: 6px;
             font-size: 0.8rem;
-            color: #f1c40f;
-            background: rgba(0,0,0,0.3);
-            padding: 5px 10px;
+            color: #ffd166;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 12px;
             border-radius: 20px;
             display: inline-block;
+            border: 1px solid rgba(255,209,102,0.4);
+            z-index: 5;
         }
 
         /* Thanh tiến trình sinh trưởng */
         .progress-bar-container {
-            width: 80%;
-            background: rgba(255,255,255,0.2);
-            height: 10px;
-            border-radius: 5px;
+            width: 85%;
+            background: rgba(255,255,255,0.15);
+            height: 12px;
+            border-radius: 6px;
             margin: 8px auto 4px auto;
             overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #2ecc71, #a8ff78);
-            transition: width 0.3s ease;
+            background: linear-gradient(90deg, #52b788, #95d5b2);
+            transition: width 0.4s ease;
         }
 
-        /* Phần hiển thị Logo trường & Nhóm 7 */
+        /* Bảng vinh danh Logo trường & Nhóm 7 */
         .final-celebration {
             margin-top: 8px;
-            background: rgba(46, 204, 113, 0.25);
-            border: 1px solid #2ecc71;
+            background: rgba(82, 183, 136, 0.25);
+            border: 1px solid #52b788;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 12px;
             display: none;
-            animation: popIn 0.8s ease forwards;
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
+            0% { transform: scale(0.7); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
 
         .school-badge-logo {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: bold;
-            color: #f1c40f;
-            margin-bottom: 3px;
+            color: #ffd166;
+            margin-bottom: 4px;
             text-transform: uppercase;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.6);
         }
         .team-members {
             font-size: 0.85rem;
@@ -218,18 +234,18 @@
             color: #fff;
         }
 
-        /* Chữ Admin góc nhỏ & Nút xem lại hiệu ứng */
+        /* Nút điều khiển */
         .admin-badge {
             position: fixed;
             bottom: 10px;
             right: 15px;
-            background: rgba(0, 0, 0, 0.75);
-            color: #a8ff78;
-            padding: 4px 10px;
+            background: rgba(8, 28, 21, 0.9);
+            color: #95d5b2;
+            padding: 4px 12px;
             border-radius: 8px;
             font-size: 0.75rem;
             letter-spacing: 1px;
-            border: 1px solid rgba(168, 255, 120, 0.3);
+            border: 1px solid rgba(82, 183, 136, 0.4);
             z-index: 10;
         }
 
@@ -237,86 +253,129 @@
             position: fixed;
             bottom: 10px;
             left: 15px;
-            background: #27ae60;
+            background: #2d6a4f;
             color: #fff;
-            border: none;
+            border: 1px solid #52b788;
             padding: 6px 14px;
             border-radius: 8px;
             font-size: 0.8rem;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            transition: all 0.2s;
             z-index: 10;
         }
         .replay-btn:hover {
-            background: #2ecc71;
+            background: #52b788;
             transform: scale(1.05);
         }
     </style>
 </head>
 <body>
 
-    <!-- Hiệu ứng mưa rơi -->
-    <div class="rain" id="rainEffect"></div>
+    <!-- Hiệu ứng lá cây rơi 5D -->
+    <div class="leaves-container" id="leavesContainer"></div>
 
     <div class="container">
-        <h1>🌱 HÀNH TRÌNH XANH - NHÓM 7 🌱</h1>
+        <h1>🌳 HÀNH TRÌNH XANH 5D - NHÓM 7 🌳</h1>
         <div class="school-name">🏫 Trường THCS Trần Hải Phụng</div>
-        <p class="subtitle">Chạm liên tục để tưới cây • Kéo để xoay 3D • Khám phá thông điệp bảo vệ rừng</p>
+        <p class="subtitle">Chạm để tưới cây sinh trưởng • Trải nghiệm mô hình cây chi tiết 5D</p>
 
-        <!-- Khung tương tác cây & nhân vật -->
-        <div class="interactive-scene" id="scene" title="Nhấp chuột để tưới cây & Kéo chuột xoay vòng">
+        <!-- Khung tương tác 5D -->
+        <div class="interactive-scene" id="scene" title="Nhấp chuột để tưới cây">
             <div class="message-3d" id="msg-1">🌲 "Rừng là lá phổi xanh của Trái Đất"</div>
-            <div class="message-3d" id="msg-2">💧 "Trồng một cây xanh, mở ra vạn hy vọng"</div>
-            <div class="message-3d" id="msg-3">🛡️ "Bảo vệ rừng hôm nay, sự sống ngày mai"</div>
-            <div class="message-3d" id="msg-4">🌍 "Hành động nhỏ - Ý nghĩa lớn cho thiên nhiên"</div>
+            <div class="message-3d" id="msg-2">💧 "Trồng một cây xanh, thắp sáng tương lai"</div>
+            <div class="message-3d" id="msg-3">🛡️ "Bảo vệ rừng hôm nay, giữ lấy sự sống"</div>
+            <div class="message-3d" id="msg-4">🌍 "Hành động nhỏ - Lan tỏa màu xanh"</div>
 
-            <!-- Nhân vật bước ra từ 2 bên -->
-            <div class="character" id="char-left">🧑‍🌾 🌱</div>
-            <div class="character" id="char-right">🧑‍🌾 💧</div>
+            <!-- Nhân vật chạy vòng quanh cây -->
+            <div class="runner-character" id="runner">🏃‍♂️💧</div>
 
-            <div id="tree-object">🌱</div>
-            <div class="instructions" id="instructionText">👉 Nhấp chuột vào đây để tưới nước nuôi cây lớn dần!</div>
+            <!-- Mô hình cây Vector SVG siêu chi tiết từng ngọn lá -->
+            <div class="tree-vector-box" id="treeBox">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Giai đoạn 0: Đất và Hạt giống -->
+                    <ellipse cx="100" cy="180" rx="60" ry="12" fill="#38220f" opacity="0.8"/>
+                    <circle id="phase-0" class="growth-part active" cx="100" cy="172" r="6" fill="#8d5b4c"/>
+
+                    <!-- Giai đoạn 1: Mầm non nhô lên -->
+                    <path id="phase-1" class="growth-part" d="M100,175 Q100,150 90,140 M90,140 Q85,135 80,140 Q90,145 90,140" fill="none" stroke="#52b788" stroke-width="4" stroke-linecap="round"/>
+                    <path id="phase-1-leaf" class="growth-part" d="M90,140 Q80,130 85,120 Q95,130 90,140" fill="#74c69d"/>
+
+                    <!-- Giai đoạn 2: Cây non đâm chồi nảy lộc (Thân nhỏ & tán lá đầu tiên) -->
+                    <path id="phase-2-trunk" class="growth-part" d="M95,175 L95,130 Q95,120 100,110 L105,120 L105,175 Z" fill="#6f4e37"/>
+                    <circle id="phase-2-leaves" class="growth-part" cx="100" cy="105" r="22" fill="#52b788"/>
+                    <circle cx="92" cy="100" r="12" fill="#74c69d" class="growth-part phase-2-sub"/>
+                    <circle cx="108" cy="100" r="12" fill="#40916c" class="growth-part phase-2-sub"/>
+
+                    <!-- Giai đoạn 3: Cây cứng cáp, cành nhánh tỏa rộng -->
+                    <path id="phase-3-branches" class="growth-part" d="M92,140 Q70,120 60,110 M108,140 Q130,120 140,110" fill="none" stroke="#6f4e37" stroke-width="6" stroke-linecap="round"/>
+                    <circle id="phase-3-canopy1" class="growth-part" cx="60" cy="105" r="18" fill="#52b788"/>
+                    <circle id="phase-3-canopy2" class="growth-part" cx="140" cy="105" r="18" fill="#52b788"/>
+                    <circle id="phase-3-canopy3" class="growth-part" cx="100" cy="85" r="28" fill="#40916c"/>
+
+                    <!-- Giai đoạn 4: Cây đại thụ trưởng thành toàn diện (Từng ngọn lá chi tiết sắc nét) -->
+                    <g id="phase-4-mature" class="growth-part">
+                        <!-- Thân cây chính lớn & rễ -->
+                        <path d="M85,180 L88,120 Q88,100 100,90 Q112,100 112,120 L115,180 Z" fill="#5c4033"/>
+                        <path d="M88,150 Q70,165 60,175 M112,150 Q130,165 140,175" fill="none" stroke="#4a3323" stroke-width="7" stroke-linecap="round"/>
+                        <!-- Các tầng tán lá chi tiết tỉ mỉ từng ngọn -->
+                        <circle cx="100" cy="75" r="38" fill="#2d6a4f"/>
+                        <circle cx="75" cy="90" r="30" fill="#40916c"/>
+                        <circle cx="125" cy="90" r="30" fill="#52b788"/>
+                        <circle cx="60" cy="115" r="24" fill="#74c69d"/>
+                        <circle cx="140" cy="115" r="24" fill="#40916c"/>
+                        <circle cx="90" cy="60" r="22" fill="#74c69d"/>
+                        <circle cx="110" cy="60" r="22" fill="#52b788"/>
+                        <!-- Điểm nhấn ánh sáng ngọn lá 5D -->
+                        <circle cx="95" cy="55" r="6" fill="#b7e4c7" opacity="0.8"/>
+                        <circle cx="65" cy="80" r="5" fill="#b7e4c7" opacity="0.8"/>
+                        <circle cx="135" cy="80" r="5" fill="#b7e4c7" opacity="0.8"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="instructions" id="instructionText">👉 Nhấp chuột vào đây để tưới nước nuôi dưỡng cây lớn!</div>
         </div>
 
         <div class="progress-bar-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        <p style="font-size: 0.75rem; opacity: 0.8;" id="statusText">Mức độ sinh trưởng: 0% (Hạt giống)</p>
+        <p style="font-size: 0.75rem; opacity: 0.8;" id="statusText">Mức độ sinh trưởng: 0% (Hạt giống đất)</p>
 
-        <!-- Phần hiển thị Logo trường & Nhóm 7 khi hoàn thành -->
+        <!-- Bảng vinh danh Logo trường & Nhóm 7 -->
         <div class="final-celebration" id="finalBox">
             <div class="school-badge-logo">🌟 TRƯỜNG THCS TRẦN HẢI PHỤNG - TỰ HÀO LỚP XANH 🌟</div>
-            <div class="team-members">Đội ngũ Nhóm 7 thực hiện: Lê Nhân, Mỹ Khanh, Khánh Ngọc, Gia Hưng[span_1](start_span)[span_1](end_span)</div>
+            <div class="team-members">Đội ngũ Nhóm 7 thực hiện: Lê Nhân, Mỹ Khanh, Khánh Ngọc, Gia Hưng[span_0](start_span)[span_0](end_span)</div>
         </div>
     </div>
 
-    <!-- Nút xem lại hiệu ứng & Admin -->
+    <!-- Nút điều khiển -->
     <button class="replay-btn" id="replayBtn">🔄 Xem lại hiệu ứng</button>
     <div class="admin-badge">Admin: Lê Nhân</div>
 
     <script>
-        // Tạo mưa tự động
-        const rainContainer = document.getElementById('rainEffect');
-        for (let i = 0; i < 50; i++) {
-            const drop = document.createElement('div');
-            drop.classList.add('drop');
-            drop.style.left = Math.random() * 100 + 'vw';
-            drop.style.top = (Math.random() * -100) + 'vh';
-            drop.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
-            drop.style.animationDelay = Math.random() * 2 + 's';
-            rainContainer.appendChild(drop);
+        // Tạo hiệu ứng lá cây rơi ngẫu nhiên chân thật
+        const leavesContainer = document.getElementById('leavesContainer');
+        for (let i = 0; i < 30; i++) {
+            const leaf = document.createElement('div');
+            leaf.classList.add('leaf');
+            leaf.style.left = Math.random() * 100 + 'vw';
+            leaf.style.top = (Math.random() * -100) + 'vh';
+            leaf.style.width = (12 + Math.random() * 15) + 'px';
+            leaf.style.height = (18 + Math.random() * 20) + 'px';
+            leaf.style.animationDuration = (4 + Math.random() * 5) + 's';
+            leaf.style.animationDelay = Math.random() * 5 + 's';
+            leavesContainer.appendChild(leaf);
         }
 
         const scene = document.getElementById('scene');
-        const treeObj = document.getElementById('tree-object');
+        const treeBox = document.getElementById('treeBox');
         const progressBar = document.getElementById('progressBar');
         const statusText = document.getElementById('statusText');
         const instructionText = document.getElementById('instructionText');
         const finalBox = document.getElementById('finalBox');
-        const charLeft = document.getElementById('char-left');
-        const charRight = document.getElementById('char-right');
+        const runner = document.getElementById('runner');
         const replayBtn = document.getElementById('replayBtn');
         
         const messages = [
@@ -326,84 +385,97 @@
             document.getElementById('msg-4')
         ];
 
-        let growthStage = 0;
-        let rotationAngle = 0;
-        let isDragging = false;
-        let startX = 0;
-
-        const stages = [
-            { icon: '🌱', text: 'Hạt giống nảy mầm (0%)' },
-            { icon: '🌿', text: 'Cây non đang lớn (25%)' },
-            { icon: '🪴', text: 'Cây bắt đầu cứng cáp (50%)' },
-            { icon: '🌲', text: 'Cây cao bóng mát (75%)' },
-            { icon: '🌳', text: 'CÂY ĐẠI THỤ TRƯỞNG THÀNH & PHỦ XANH!' }
+        const parts = [
+            document.getElementById('phase-0'),
+            document.querySelectorAll('#phase-1, #phase-1-leaf'),
+            document.querySelectorAll('#phase-2-trunk, #phase-2-leaves, .phase-2-sub'),
+            document.querySelectorAll('#phase-3-branches, #phase-3-canopy1, #phase-3-canopy2, #phase-3-canopy3'),
+            document.getElementById('phase-4-mature')
         ];
 
-        // Click để tưới cây
+        const phaseTexts = [
+            "Hạt giống nằm dưới đất (0%)",
+            "Mầm non cựa mình nhô lên (25%)",
+            "Cây non đâm chồi nảy lộc (50%)",
+            "Cây cứng cáp tỏa cành nhánh (75%)",
+            "CÂY ĐẠI THỤ 5D TRƯỞNG THÀNH CHI TIẾT TOÀN DIỆN!"
+        ];
+
+        let growthStage = 0;
+
+        // Click tương tác tưới cây sinh trưởng chi tiết
         scene.addEventListener('click', () => {
             if (growthStage < 100) {
-                growthStage += 10;
+                growthStage += 25;
                 if (growthStage > 100) growthStage = 100;
                 
                 progressBar.style.width = growthStage + '%';
 
-                let stageIndex = Math.floor((growthStage / 100) * (stages.length - 1));
-                treeObj.textContent = stages[stageIndex].icon;
-                statusText.textContent = `Mức độ sinh trưởng: ${growthStage}% (${stages[stageIndex].text})`;
+                let stageIndex = growthStage / 25; // 0, 1, 2, 3, 4
                 
-                // Hiệu ứng nảy scale
-                treeObj.style.transform = `rotate(${rotationAngle}deg) scale(1.25)`;
-                setTimeout(() => {
-                    treeObj.style.transform = `rotate(${rotationAngle}deg) scale(1)`;
-                }, 200);
+                // Cập nhật trạng thái hiển thị các phần SVG chi tiết cây
+                parts.forEach((part, index) => {
+                    if (index <= stageIndex) {
+                        if (NodeList.prototype.isPrototypeOf(part) || Array.isArray(part)) {
+                            part.forEach(p => p.classList.add('active'));
+                        } else {
+                            part.classList.add('active');
+                        }
+                    }
+                });
 
-                // Hiển thị thông điệp 3D dần dần
-                if (growthStage >= 30) messages[0].classList.add('show');
+                statusText.textContent = `Mức độ sinh trưởng: ${growthStage}% (${phaseTexts[stageIndex]})`;
+                
+                // Hiệu ứng nảy phóng to mượt mà
+                treeBox.style.transform = 'scale(1.3) translateY(-5px)';
+                setTimeout(() => {
+                    treeBox.style.transform = 'scale(1) translateY(0)';
+                }, 250);
+
+                // Kích hoạt nhân vật chạy vòng quanh cây khi đang nuôi dưỡng
+                if (growthStage > 0 && growthStage < 100) {
+                    runner.classList.add('running');
+                }
+
+                // Hiện dần các thông điệp 5D
+                if (growthStage >= 25) messages[0].classList.add('show');
                 if (growthStage >= 50) messages[1].classList.add('show');
                 if (growthStage >= 75) messages[2].classList.add('show');
 
-                // Khi đạt 100% -> Nhân vật bước ra trồng cây & Hiện logo trường
+                // Khi đạt 100% hoàn thành
                 if (growthStage === 100) {
                     messages[3].classList.add('show');
-                    instructionText.textContent = "✨ Hoàn thành xuất sắc! Khu rừng đã được hồi sinh!";
-                    charLeft.classList.add('active-left');
-                    charRight.classList.add('active-right');
+                    instructionText.textContent = "✨ Tuyệt vời! Rừng 5D đã được phục hồi hoàn toàn!";
+                    runner.classList.remove('running');
+                    runner.style.display = 'none'; // Ẩn nhân vật để hiện bảng vinh danh
                     finalBox.style.display = 'block';
                 }
             }
         });
 
-        // Xoay 3D cây bằng cách kéo chuột
-        scene.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX;
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            let deltaX = e.clientX - startX;
-            rotationAngle += deltaX * 0.5;
-            treeObj.style.transform = `rotate(${rotationAngle}deg)`;
-            startX = e.clientX;
-        });
-
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
         // Nút Xem lại hiệu ứng từ đầu
         replayBtn.addEventListener('click', () => {
             growthStage = 0;
-            rotationAngle = 0;
             progressBar.style.width = '0%';
-            treeObj.textContent = '🌱';
-            treeObj.style.transform = 'rotate(0deg)';
-            statusText.textContent = 'Mức độ sinh trưởng: 0% (Hạt giống)';
-            instructionText.textContent = '👉 Nhấp chuột vào đây để tưới nước nuôi cây lớn dần!';
+            statusText.textContent = 'Mức độ sinh trưởng: 0% (Hạt giống đất)';
+            instructionText.textContent = '👉 Nhấp chuột vào đây để tưới nước nuôi dưỡng cây lớn!';
             finalBox.style.display = 'none';
-            charLeft.classList.remove('active-left');
-            charRight.classList.remove('active-right');
+            runner.style.display = 'block';
+            runner.classList.remove('running');
             messages.forEach(msg => msg.classList.remove('show'));
+
+            // Reset tất cả các phần cây về ẩn
+            parts.forEach((part, index) => {
+                if (index === 0) {
+                    part.classList.add('active');
+                } else {
+                    if (NodeList.prototype.isPrototypeOf(part) || Array.isArray(part)) {
+                        part.forEach(p => p.classList.remove('active'));
+                    } else {
+                        part.classList.remove('active');
+                    }
+                }
+            });
         });
     </script>
 </body>
