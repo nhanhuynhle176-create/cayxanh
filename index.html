@@ -1,545 +1,1408 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hành Trình Xanh 5D - Trường THCS Trần Hải Phụng</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: radial-gradient(circle at center, #1b4332 0%, #051911 100%);
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-        }
-
-        /* Hiệu ứng lá cây rơi 5D chân thật */
-        .leaves-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .leaf {
-            position: absolute;
-            background: linear-gradient(135deg, #74c69d, #1b4332);
-            border-radius: 150% 0 150% 0;
-            opacity: 0.85;
-            box-shadow: 0 0 5px rgba(82, 183, 136, 0.5);
-            animation: leafFall linear infinite;
-        }
-        @keyframes leafFall {
-            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); }
-            50% { transform: translateY(50vh) translateX(70px) rotate(180deg); }
-            100% { transform: translateY(110vh) translateX(-50px) rotate(360deg); }
-        }
-
-        .container {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            max-width: 950px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(82, 183, 136, 0.4);
-            padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
-        }
-
-        h1 {
-            color: #95d5b2;
-            font-size: 1.8rem;
-            margin-bottom: 2px;
-            text-shadow: 0 2px 15px rgba(82, 183, 136, 0.7);
-        }
-
-        .school-name {
-            font-size: 1rem;
-            color: #d8f3dc;
-            font-weight: bold;
-            margin-bottom: 6px;
-            letter-spacing: 1px;
-        }
-
-        p.subtitle {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            margin-bottom: 8px;
-        }
-
-        /* Khung tương tác 5D không gian sâu */
-        .interactive-scene {
-            position: relative;
-            width: 100%;
-            height: 330px;
-            background: radial-gradient(circle, rgba(30, 80, 55, 0.6) 0%, rgba(3, 15, 10, 0.95) 100%);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            border: 2px solid rgba(82, 183, 136, 0.7);
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.9), 0 0 20px rgba(82, 183, 136, 0.2);
-        }
-
-        /* Khung chứa Cây Vector 5D siêu chi tiết */
-        .tree-vector-box {
-            position: relative;
-            width: 220px;
-            height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.9));
-        }
-
-        /* Các giai đoạn ẩn/hiện sinh trưởng */
-        .stage-group {
-            opacity: 0;
-            transform: scale(0.2);
-            transform-origin: bottom center;
-            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: none;
-        }
-        .stage-group.active {
-            opacity: 1;
-            transform: scale(1);
-            display: inline;
-        }
-
-        /* 5 Thành viên (3 Nam, 2 Nữ) chạy vòng quanh cây */
-        .team-runner {
-            position: absolute;
-            font-size: 30px;
-            opacity: 0;
-            z-index: 4;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-        .team-runner.running {
-            opacity: 1;
-        }
-
-        /* Quỹ đạo chạy vòng tròn lệch pha nhau cho 5 người */
-        #runner-1.running { animation: orbit1 2.5s linear infinite; }
-        #runner-2.running { animation: orbit2 2.5s linear infinite; animation-delay: 0.5s; }
-        #runner-3.running { animation: orbit3 2.5s linear infinite; animation-delay: 1.0s; }
-        #runner-4.running { animation: orbit4 2.5s linear infinite; animation-delay: 1.5s; }
-        #runner-5.running { animation: orbit5 2.5s linear infinite; animation-delay: 2.0s; }
-
-        @keyframes orbit1 {
-            0% { transform: translate(-130px, 40px) scaleX(1); }
-            50% { transform: translate(130px, 40px) scaleX(-1); }
-            100% { transform: translate(-130px, 40px) scaleX(1); }
-        }
-        @keyframes orbit2 {
-            0% { transform: translate(0px, 85px) scaleX(1); }
-            50% { transform: translate(0px, -35px) scaleX(-1); }
-            100% { transform: translate(0px, 85px) scaleX(1); }
-        }
-        @keyframes orbit3 {
-            0% { transform: translate(100px, 60px) scaleX(-1); }
-            50% { transform: translate(-100px, 60px) scaleX(1); }
-            100% { transform: translate(100px, 60px) scaleX(-1); }
-        }
-        @keyframes orbit4 {
-            0% { transform: translate(-90px, -20px) scaleX(1); }
-            50% { transform: translate(90px, -20px) scaleX(-1); }
-            100% { transform: translate(-90px, -20px) scaleX(1); }
-        }
-        @keyframes orbit5 {
-            0% { transform: translate(50px, 75px) scaleX(-1); }
-            50% { transform: translate(-50px, -15px) scaleX(1); }
-            100% { transform: translate(50px, 75px) scaleX(-1); }
-        }
-
-        /* Thông điệp 5D nổi bật */
-        .message-3d {
-            position: absolute;
-            background: rgba(27, 67, 50, 0.85);
-            border: 1px solid #52b788;
-            color: #d8f3dc;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
-            pointer-events: none;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 5;
-        }
-        .message-3d.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-        #msg-1 { top: 12px; left: 15px; }
-        #msg-2 { top: 12px; right: 15px; }
-        #msg-3 { bottom: 12px; left: 15px; }
-        #msg-4 { bottom: 12px; right: 15px; }
-
-        .instructions {
-            margin-top: 6px;
-            font-size: 0.8rem;
-            color: #ffd166;
-            background: rgba(0,0,0,0.6);
-            padding: 5px 14px;
-            border-radius: 20px;
-            display: inline-block;
-            border: 1px solid rgba(255,209,102,0.4);
-            z-index: 5;
-        }
-
-        /* Thanh tiến trình sinh trưởng */
-        .progress-bar-container {
-            width: 85%;
-            background: rgba(255,255,255,0.15);
-            height: 12px;
-            border-radius: 6px;
-            margin: 8px auto 4px auto;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #52b788, #b7e4c7);
-            transition: width 0.4s ease;
-        }
-
-        /* Bảng vinh danh Logo trường & Nhóm 7 */
-        .final-celebration {
-            margin-top: 8px;
-            background: rgba(82, 183, 136, 0.3);
-            border: 1px solid #52b788;
-            padding: 10px;
-            border-radius: 12px;
-            display: none;
-            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.7); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .school-badge-logo {
-            font-size: 1.15rem;
-            font-weight: bold;
-            color: #ffd166;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
-        }
-        .team-members {
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        /* Nút điều khiển */
-        .admin-badge {
-            position: fixed;
-            bottom: 10px;
-            right: 15px;
-            background: rgba(5, 25, 16, 0.95);
-            color: #95d5b2;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            border: 1px solid rgba(82, 183, 136, 0.4);
-            z-index: 10;
-        }
-
-        .replay-btn {
-            position: fixed;
-            bottom: 10px;
-            left: 15px;
-            background: #2d6a4f;
-            color: #fff;
-            border: 1px solid #52b788;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            transition: all 0.2s;
-            z-index: 10;
-        }
-        .replay-btn:hover {
-            background: #52b788;
-            transform: scale(1.05);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hành Trình Xanh 3D - THCS Trần Hải Phụng - Nhóm 7</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+  body{background:radial-gradient(circle at center,#0d2818 0%,#020805 100%);color:#fff;min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding:12px;transition:background .8s}
+  body.night{background:radial-gradient(circle at center,#0a1526 0%,#010308 100%)}
+  .leaves-container{position:fixed;inset:0;pointer-events:none;z-index:1}
+  .leaf{position:absolute;background:linear-gradient(135deg,#74c69d,#1b4332);border-radius:150% 0 150% 0;opacity:.7;box-shadow:0 0 6px rgba(82,183,136,.6);animation:leafFall linear infinite}
+  @keyframes leafFall{0%{transform:translateY(-10vh) translateX(0) rotate(0)}50%{transform:translateY(50vh) translateX(80px) rotate(180deg)}100%{transform:translateY(110vh) translateX(-60px) rotate(360deg)}}
+  .container{position:relative;z-index:2;text-align:center;max-width:1100px;width:100%;background:linear-gradient(135deg,rgba(27,67,50,.35),rgba(10,30,20,.6));backdrop-filter:blur(24px);border:1px solid rgba(82,183,136,.5);padding:18px;border-radius:26px;box-shadow:0 30px 70px rgba(0,0,0,.9)}
+  h1{font-size:1.7rem;margin-bottom:4px;background:linear-gradient(90deg,#95d5b2,#b7e4c7,#ffd166,#95d5b2);background-size:300% auto;-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;animation:shine 4s linear infinite;letter-spacing:1px}
+  @keyframes shine{to{background-position:300% center}}
+  .school-name{font-size:.95rem;color:#d8f3dc;font-weight:bold;margin-bottom:5px;letter-spacing:1.5px}
+  p.subtitle{font-size:.8rem;opacity:.85;margin-bottom:10px;color:#b7e4c7}
+  .interactive-scene{position:relative;width:100%;height:520px;background:#000;border-radius:20px;border:2px solid rgba(82,183,136,.6);box-shadow:inset 0 0 80px rgba(0,0,0,.6),0 0 40px rgba(82,183,136,.25);overflow:hidden;cursor:grab}
+  .interactive-scene:active{cursor:grabbing}
+  #three-canvas{display:block;width:100%;height:100%}
+  .scene-hud{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:12px}
+  .hud-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .message-3d{background:rgba(27,67,50,.9);border:1px solid #52b788;color:#d8f3dc;padding:6px 13px;border-radius:18px;font-size:.72rem;font-weight:bold;box-shadow:0 5px 20px rgba(0,0,0,.7);opacity:0;transform:translateY(-10px);transition:all .6s cubic-bezier(.175,.885,.32,1.275);backdrop-filter:blur(10px);max-width:45%}
+  .message-3d.show{opacity:1;transform:translateY(0)}
+  .water-hint{align-self:center;pointer-events:auto;background:linear-gradient(135deg,rgba(82,183,136,.3),rgba(27,67,50,.7));color:#ffd166;padding:10px 22px;border-radius:25px;font-size:.85rem;font-weight:bold;border:1px solid rgba(255,209,102,.6);cursor:pointer;user-select:none;transition:all .3s;box-shadow:0 5px 20px rgba(0,0,0,.6);backdrop-filter:blur(10px);text-align:center}
+  .water-hint:hover{background:linear-gradient(135deg,rgba(82,183,136,.6),rgba(27,67,50,.9));transform:scale(1.08)}
+  .water-hint:active{transform:scale(.95)}
+  .water-hint:disabled{opacity:.6;cursor:not-allowed}
+  .progress-bar-container{width:88%;background:rgba(255,255,255,.12);height:13px;border-radius:8px;margin:10px auto 6px;overflow:hidden;border:1px solid rgba(82,183,136,.3)}
+  .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#52b788,#95d5b2,#ffd166);transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 15px rgba(149,213,178,.8);border-radius:8px}
+  #statusText{font-size:.78rem;opacity:.9;color:#b7e4c7;font-weight:600}
+  #factText{font-size:.76rem;margin-top:6px;color:#ffd166;font-style:italic;min-height:18px;opacity:0;transition:opacity .4s}
+  #factText.show{opacity:1}
+  .final-celebration{margin-top:12px;background:linear-gradient(135deg,rgba(82,183,136,.35),rgba(255,209,102,.2));border:1px solid #ffd166;padding:12px;border-radius:14px;display:none;animation:popIn .9s cubic-bezier(.175,.885,.32,1.275) forwards}
+  @keyframes popIn{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  .school-badge-logo{font-size:1.05rem;font-weight:bold;color:#ffd166;margin-bottom:5px;text-transform:uppercase;letter-spacing:2px}
+  .team-members{font-size:.85rem;font-weight:bold;color:#fff}
+  .admin-badge{position:fixed;bottom:10px;right:12px;background:rgba(5,25,16,.95);color:#95d5b2;padding:5px 12px;border-radius:8px;font-size:.7rem;letter-spacing:1px;border:1px solid rgba(82,183,136,.5);z-index:10}
+  .btn-group{position:fixed;bottom:10px;left:12px;display:flex;gap:8px;z-index:10;flex-wrap:wrap}
+  .ctrl-btn{background:linear-gradient(135deg,#2d6a4f,#1b4332);color:#fff;border:1px solid #52b788;padding:7px 14px;border-radius:10px;font-size:.8rem;font-weight:bold;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.7);transition:all .25s}
+  .ctrl-btn:hover{background:linear-gradient(135deg,#52b788,#2d6a4f);transform:scale(1.08)}
+  #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(10,30,20,.95),rgba(3,10,6,.98));color:#95d5b2;font-size:.95rem;z-index:20;flex-direction:column;gap:12px;transition:opacity .6s}
+  .spinner{width:46px;height:46px;border:3px solid rgba(82,183,136,.2);border-top-color:#95d5b2;border-right-color:#ffd166;border-radius:50%;animation:spin .9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .confetti-layer{position:fixed;inset:0;pointer-events:none;z-index:15;overflow:hidden}
+  .confetti{position:absolute;width:10px;height:10px;top:-20px;opacity:0}
+  @keyframes confettiFall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(110vh) rotate(720deg)}}
+  @media(max-width:600px){
+    h1{font-size:1.2rem}
+    .interactive-scene{height:400px}
+    .message-3d{font-size:.62rem;padding:4px 9px;max-width:48%}
+    .ctrl-btn{padding:5px 10px;font-size:.7rem}
+    .admin-badge{font-size:.6rem;padding:4px 8px}
+  }
+</style>
 </head>
 <body>
 
-    <!-- Hiệu ứng lá cây rơi 5D -->
-    <div class="leaves-container" id="leavesContainer"></div>
+<div class="leaves-container" id="leavesContainer"></div>
+<div class="confetti-layer" id="confettiLayer"></div>
 
-    <div class="container">
-        <h1>🌳 HÀNH TRÌNH XANH 5D - NHÓM 7 🌳</h1>
-        <div class="school-name">🏫 Trường THCS Trần Hải Phụng</div>
-        <p class="subtitle">Chạm để tưới cây sinh trưởng • 5 thành viên đồng hành kiến tạo rừng xanh</p>
+<div class="container">
+  <h1>HÀNH TRÌNH XANH 3D</h1>
+  <div class="school-name">TRƯỜNG THCS TRẦN HẢI PHỤNG - NHÓM 7</div>
+  <p class="subtitle">Kéo chuột xoay 360 độ - Lăn chuột zoom - Nhấn nút để 5 bạn nhỏ tưới cây</p>
 
-        <!-- Khung tương tác 5D -->
-        <div class="interactive-scene" id="scene" title="Nhấp chuột để tưới cây">
-            <div class="message-3d" id="msg-1">🌲 "Rừng là lá phổi xanh của Trái Đất"</div>
-            <div class="message-3d" id="msg-2">💧 "Trồng một cây xanh, thắp sáng tương lai"</div>
-            <div class="message-3d" id="msg-3">🛡️ "Bảo vệ rừng hôm nay, giữ lấy sự sống"</div>
-            <div class="message-3d" id="msg-4">🌍 "Hành động nhỏ - Lan tỏa màu xanh"</div>
-
-            <!-- 5 Nhân vật (3 Nam, 2 Nữ) chạy vòng quanh cây -->
-            <div class="team-runner" id="runner-1">🧑‍🌾🌱</div>
-            <div class="team-runner" id="runner-2">👩‍🌾💧</div>
-            <div class="team-runner" id="runner-3">🧑‍🌾🌳</div>
-            <div class="team-runner" id="runner-4">👩‍🌾🌿</div>
-            <div class="team-runner" id="runner-5">🧑‍🌾✨</div>
-
-            <!-- Mô hình Cây Đại Thụ 5D Vector Siêu Chi Tiết -->
-            <div class="tree-vector-box" id="treeBox">
-                <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Đất & Rễ đa chiều -->
-                    <ellipse cx="110" cy="190" rx="75" ry="16" fill="#1b120c" opacity="0.95"/>
-                    <path d="M90,190 Q70,195 50,205 M130,190 Q150,195 170,205" fill="none" stroke="#2c1d11" stroke-width="6" stroke-linecap="round"/>
-
-                    <!-- Giai đoạn 0: Hạt giống mầm (0%) -->
-                    <g id="stage-0" class="stage-group active">
-                        <circle cx="110" cy="182" r="8" fill="#8d5b4c"/>
-                        <path d="M106,180 Q110,175 114,180" fill="none" stroke="#b08968" stroke-width="2"/>
-                    </g>
-
-                    <!-- Giai đoạn 1: Mầm non vươn chồi (25%) -->
-                    <g id="stage-1" class="stage-group">
-                        <path d="M110,190 Q110,150 95,130" fill="none" stroke="#52b788" stroke-width="5" stroke-linecap="round"/>
-                        <path d="M95,130 Q75,115 85,100 Q105,115 95,130" fill="#74c69d"/>
-                        <path d="M102,145 Q120,130 115,115" fill="none" stroke="#52b788" stroke-width="3" stroke-linecap="round"/>
-                    </g>
-
-                    <!-- Giai đoạn 2: Cây non đâm chồi nảy lộc (50%) -->
-                    <g id="stage-2" class="stage-group">
-                        <path d="M102,190 L102,130 Q102,110 110,95 L118,110 L118,190 Z" fill="#5c4033"/>
-                        <path d="M110,110 Q85,90 75,75 M110,120 Q135,90 145,75" fill="none" stroke="#4a3323" stroke-width="6" stroke-linecap="round"/>
-                        <circle cx="110" cy="80" r="32" fill="#40916c"/>
-                        <circle cx="80" cy="72" r="24" fill="#52b788"/>
-                        <circle cx="140" cy="72" r="24" fill="#52b788"/>
-                        <circle cx="110" cy="60" r="20" fill="#74c69d"/>
-                    </g>
-
-                    <!-- Giai đoạn 3: Cây trưởng thành tỏa cành nhánh chằng chịt (75%) -->
-                    <g id="stage-3" class="stage-group">
-                        <path d="M98,190 L102,110 Q102,80 110,70 Q118,80 118,110 L122,190 Z" fill="#3d2817"/>
-                        <path d="M105,120 Q70,95 55,80 M60,95 Q45,85 40,75 M115,120 Q150,95 165,80 M160,95 Q175,85 180,75" fill="none" stroke="#2c1d11" stroke-width="7" stroke-linecap="round"/>
-                        <circle cx="110" cy="55" r="45" fill="#2d6a4f"/>
-                        <circle cx="70" cy="75" r="34" fill="#40916c"/>
-                        <circle cx="150" cy="75" r="34" fill="#40916c"/>
-                        <circle cx="45" cy="75" r="26" fill="#52b788"/>
-                        <circle cx="175" cy="75" r="26" fill="#52b788"/>
-                        <circle cx="110" cy="38" r="28" fill="#74c69d"/>
-                    </g>
-
-                    <!-- Giai đoạn 4: ĐẠI THỤ 5D CỰC KỲ CHI TIẾT & CHÂN THẬT (100%) -->
-                    <g id="stage-4" class="stage-group">
-                        <path d="M90,195 L95,100 Q95,70 110,50 Q125,70 125,100 L130,195 Z" fill="#2c1d11"/>
-                        <path d="M95,150 Q65,165 45,180 M125,150 Q155,165 175,180 M102,170 Q80,185 65,195 M118,170 Q140,185 155,195" fill="none" stroke="#1b120c" stroke-width="9" stroke-linecap="round"/>
-                        <path d="M105,180 L107,110 M115,180 L113,110 M110,190 L110,130" fill="none" stroke="#150e09" stroke-width="3" opacity="0.8"/>
-                        
-                        <path d="M100,110 Q65,85 45,65 M60,85 Q35,70 25,55 M50,75 Q30,60 20,45 M120,110 Q155,85 175,65 M160,85 Q185,70 195,55 M170,75 Q190,60 200,45 M110,75 Q110,45 110,30" fill="none" stroke="#2c1d11" stroke-width="8" stroke-linecap="round"/>
-
-                        <circle cx="110" cy="35" r="50" fill="#1b4332"/>
-                        <circle cx="70" cy="55" r="40" fill="#2d6a4f"/>
-                        <circle cx="150" cy="55" r="40" fill="#2d6a4f"/>
-                        <circle cx="35" cy="50" r="32" fill="#40916c"/>
-                        <circle cx="185" cy="50" r="32" fill="#40916c"/>
-                        <circle cx="20" cy="40" r="24" fill="#52b788"/>
-                        <circle cx="200" cy="40" r="24" fill="#52b788"/>
-                        <circle cx="90" cy="20" r="30" fill="#52b788"/>
-                        <circle cx="130" cy="20" r="30" fill="#52b788"/>
-                        <circle cx="110" cy="10" r="22" fill="#74c69d"/>
-
-                        <circle cx="100" cy="15" r="8" fill="#b7e4c7" opacity="0.95"/>
-                        <circle cx="60" cy="40" r="7" fill="#b7e4c7" opacity="0.95"/>
-                        <circle cx="160" cy="40" r="7" fill="#b7e4c7" opacity="0.95"/>
-                        <circle cx="30" cy="35" r="6" fill="#b7e4c7" opacity="0.95"/>
-                        <circle cx="190" cy="35" r="6" fill="#b7e4c7" opacity="0.95"/>
-                        <circle cx="125" cy="30" r="5" fill="#d8f3dc" opacity="0.95"/>
-                        <circle cx="95" cy="30" r="5" fill="#d8f3dc" opacity="0.95"/>
-                    </g>
-                </svg>
-            </div>
-
-            <div class="instructions" id="instructionText">👉 Nhấp chuột vào đây để tưới nước nuôi dưỡng cây lớn!</div>
-        </div>
-
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        <p style="font-size: 0.75rem; opacity: 0.8;" id="statusText">Mức độ sinh trưởng: 0% (Hạt giống dưới đất)</p>
-
-        <!-- Bảng vinh danh Logo trường & Nhóm 7 -->
-        <div class="final-celebration" id="finalBox">
-            <div class="school-badge-logo">🌟 TRƯỜNG THCS TRẦN HẢI PHỤNG - TỰ HÀO LỚP XANH 🌟</div>
-            <div class="team-members">Đội ngũ Nhóm 7 thực hiện: Lê Nhân, Mỹ Khanh, Khánh Ngọc, Gia Hưng[span_0](start_span)[span_0](end_span)</div>
-        </div>
+  <div class="interactive-scene" id="scene">
+    <div id="loading">
+      <div class="spinner"></div>
+      <div>Đang tải khu rừng 3D...</div>
     </div>
+    <canvas id="three-canvas"></canvas>
+    <div class="scene-hud">
+      <div class="hud-row">
+        <div class="message-3d" id="msg-1">"Rừng là lá phổi xanh của Trái Đất"</div>
+        <div class="message-3d" id="msg-2">"Trồng một cây xanh, thắp sáng tương lai"</div>
+      </div>
+      <div class="water-hint" id="waterHint">Nhấn để 5 bạn nhỏ tưới cây</div>
+      <div class="hud-row">
+        <div class="message-3d" id="msg-3">"Bảo vệ rừng hôm nay, giữ lấy sự sống"</div>
+        <div class="message-3d" id="msg-4">"Hành động nhỏ - Lan tỏa màu xanh"</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Nút điều khiển -->
-    <button class="replay-btn" id="replayBtn">🔄 Xem lại hiệu ứng</button>
-    <div class="admin-badge">Admin: Lê Nhân</div>
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <p id="statusText">Mức độ sinh trưởng: 0% (Hạt giống dưới đất)</p>
+  <p id="factText"></p>
 
-    <script>
-        // Tạo hiệu ứng lá cây rơi ngẫu nhiên chân thật
-        const leavesContainer = document.getElementById('leavesContainer');
-        for (let i = 0; i < 35; i++) {
-            const leaf = document.createElement('div');
-            leaf.classList.add('leaf');
-            leaf.style.left = Math.random() * 100 + 'vw';
-            leaf.style.top = (Math.random() * -100) + 'vh';
-            leaf.style.width = (12 + Math.random() * 16) + 'px';
-            leaf.style.height = (18 + Math.random() * 22) + 'px';
-            leaf.style.animationDuration = (3.5 + Math.random() * 4.5) + 's';
-            leaf.style.animationDelay = Math.random() * 5 + 's';
-            leavesContainer.appendChild(leaf);
-        }
+  <div class="final-celebration" id="finalBox">
+    <div class="school-badge-logo">TRƯỜNG THCS TRẦN HẢI PHỤNG - TỰ HÀO LỚP XANH</div>
+    <div class="team-members">Đội ngũ Nhóm 7: Lê Nhân, Mỹ Khanh, Khánh Ngọc, Gia Hưng</div>
+  </div>
+</div>
 
-        const scene = document.getElementById('scene');
-        const treeBox = document.getElementById('treeBox');
-        const progressBar = document.getElementById('progressBar');
-        const statusText = document.getElementById('statusText');
-        const instructionText = document.getElementById('instructionText');
-        const finalBox = document.getElementById('finalBox');
-        const replayBtn = document.getElementById('replayBtn');
-        
-        const runners = [
-            document.getElementById('runner-1'),
-            document.getElementById('runner-2'),
-            document.getElementById('runner-3'),
-            document.getElementById('runner-4'),
-            document.getElementById('runner-5')
-        ];
+<div class="btn-group">
+  <button class="ctrl-btn" id="replayBtn">Xem lại</button>
+  <button class="ctrl-btn" id="nightBtn">Chế độ ban đêm</button>
+  <button class="ctrl-btn" id="photoBtn">Chụp ảnh</button>
+</div>
+<div class="admin-badge">Admin: Lê Nhân</div>
 
-        const messages = [
-            document.getElementById('msg-1'),
-            document.getElementById('msg-2'),
-            document.getElementById('msg-3'),
-            document.getElementById('msg-4')
-        ];
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 
-        const stages = [
-            document.getElementById('stage-0'),
-            document.getElementById('stage-1'),
-            document.getElementById('stage-2'),
-            document.getElementById('stage-3'),
-            document.getElementById('stage-4')
-        ];
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        const phaseTexts = [
-            "Hạt giống nằm dưới đất (0%)",
-            "Mầm non vươn chồi (25%)",
-            "Cây non đâm chồi nảy lộc (50%)",
-            "Cây cứng cáp tỏa cành nhánh (75%)",
-            "CÂY ĐẠI THỤ 5D CỰC KỲ CHI TIẾT & CHÂN THẬT TOÀN DIỆN!"
-        ];
+const leavesContainer = document.getElementById('leavesContainer');
+for (let i = 0; i < 35; i++) {
+  const leaf = document.createElement('div');
+  leaf.classList.add('leaf');
+  leaf.style.left = Math.random()*100+'vw';
+  leaf.style.top = (Math.random()*-100)+'vh';
+  leaf.style.width = (10+Math.random()*14)+'px';
+  leaf.style.height = (16+Math.random()*20)+'px';
+  leaf.style.animationDuration = (4+Math.random()*5)+'s';
+  leaf.style.animationDelay = Math.random()*6+'s';
+  leavesContainer.appendChild(leaf);
+}
 
-        let currentStep = 0;
+const canvas = document.getElementById('three-canvas');
+const sceneEl = document.getElementById('scene');
+const loadingEl = document.getElementById('loading');
 
-        // Click tương tác tưới cây sinh trưởng chi tiết
-        scene.addEventListener('click', () => {
-            if (currentStep < 4) {
-                currentStep++;
-                let progressPercent = currentStep * 25;
-                
-                progressBar.style.width = progressPercent + '%';
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, preserveDrawingBuffer:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-                // Chuyển đổi trạng thái hiển thị các nhóm SVG chính xác
-                stages.forEach((st, idx) => {
-                    if (idx === currentStep) {
-                        st.classList.add('active');
-                    } else {
-                        st.classList.remove('active');
-                    }
-                });
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x1a3a3a, 0.018);
 
-                statusText.textContent = `Mức độ sinh trưởng: ${progressPercent}% (${phaseTexts[currentStep]})`;
-                
-                // Hiệu ứng nảy phóng to mượt mà
-                treeBox.style.transform = 'scale(1.35) translateY(-5px)';
-                setTimeout(() => {
-                    treeBox.style.transform = 'scale(1) translateY(0)';
-                }, 250);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 300);
+camera.position.set(0, 5.5, 13);
 
-                // Kích hoạt 5 thành viên (3 nam, 2 nữ) chạy vòng quanh cây khi đang nuôi dưỡng
-                if (currentStep > 0 && currentStep < 4) {
-                    runners.forEach(r => r.classList.add('running'));
-                }
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 5;
+controls.maxDistance = 25;
+controls.minPolarAngle = 0.4;
+controls.maxPolarAngle = Math.PI/2 - 0.02;
+controls.target.set(0, 2.8, 0);
+controls.enablePan = false;
 
-                // Hiện dần các thông điệp 5D
-                if (currentStep >= 1) messages[0].classList.add('show');
-                if (currentStep >= 2) messages[1].classList.add('show');
-                if (currentStep >= 3) messages[2].classList.add('show');
+const skyUniforms = {
+  topColor: { value: new THREE.Color(0x1a5a8a) },
+  midColor: { value: new THREE.Color(0x88c8e8) },
+  bottomColor: { value: new THREE.Color(0xffd8a8) }
+};
+const skyGeo = new THREE.SphereGeometry(100, 32, 32);
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide,
+  uniforms: skyUniforms,
+  vertexShader: `
+    varying vec3 vWorldPos;
+    void main(){
+      vec4 wp = modelMatrix * vec4(position,1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }`,
+  fragmentShader: `
+    uniform vec3 topColor;
+    uniform vec3 midColor;
+    uniform vec3 bottomColor;
+    varying vec3 vWorldPos;
+    void main(){
+      float h = normalize(vWorldPos + vec3(0.0,20.0,0.0)).y;
+      vec3 col;
+      if(h > 0.3) col = mix(midColor, topColor, pow((h-0.3)/0.7, 0.8));
+      else col = mix(bottomColor, midColor, smoothstep(-0.1, 0.3, h));
+      gl_FragColor = vec4(col, 1.0);
+    }`
+});
+scene.add(new THREE.Mesh(skyGeo, skyMat));
 
-                // Khi đạt 100% hoàn thành (Bước 4)
-                if (currentStep === 4) {
-                    messages[3].classList.add('show');
-                    instructionText.textContent = "✨ Tuyệt vời! Nhóm 7 đã hoàn thành xuất sắc sứ mệnh phục hồi rừng!";
-                    runners.forEach(r => {
-                        r.classList.remove('running');
-                        r.style.display = 'none'; // Ẩn để hiện bảng vinh danh
-                    });
-                    finalBox.style.display = 'block';
-                }
-            }
-        });
+const hemi = new THREE.HemisphereLight(0xbde0fe, 0x2d4a1a, 1.0);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0c8, 2.8);
+sun.position.set(8, 16, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 50;
+sun.shadow.camera.left = -15;
+sun.shadow.camera.right = 15;
+sun.shadow.camera.top = 15;
+sun.shadow.camera.bottom = -15;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+const rim = new THREE.DirectionalLight(0x9affc8, 1.2);
+rim.position.set(-8, 6, -8);
+scene.add(rim);
+const fill = new THREE.PointLight(0xffd8a8, 1.5, 20);
+fill.position.set(0, 3, 8);
+scene.add(fill);
 
-        // Nút Xem lại hiệu ứng từ đầu
-        replayBtn.addEventListener('click', () => {
-            currentStep = 0;
-            progressBar.style.width = '0%';
-            statusText.textContent = 'Mức độ sinh trưởng: 0% (Hạt giống dưới đất)';
-            instructionText.textContent = '👉 Nhấp chuột vào đây để tưới nước nuôi dưỡng cây lớn!';
-            finalBox.style.display = 'none';
-            runners.forEach(r => {
-                r.style.display = 'block';
-                r.classList.remove('running');
-            });
-            messages.forEach(msg => msg.classList.remove('show'));
+const sunCore = new THREE.Mesh(
+  new THREE.SphereGeometry(3, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0xfff3c0 })
+);
+sunCore.position.set(40, 45, 30);
+scene.add(sunCore);
+const sunGlow = new THREE.Mesh(
+  new THREE.SphereGeometry(6, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0.35 })
+);
+sunGlow.position.copy(sunCore.position);
+scene.add(sunGlow);
 
-            // Reset hiển thị SVG về hạt giống ban đầu
-            stages.forEach((st, idx) => {
-                if (idx === 0) {
-                    st.classList.add('active');
-                } else {
-                    st.classList.remove('active');
-                }
-            });
-        });
-    </script>
+const moonGroup = new THREE.Group();
+const moon = new THREE.Mesh(
+  new THREE.SphereGeometry(2.2, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0xf0f0ff })
+);
+moonGroup.add(moon);
+const moonGlow = new THREE.Mesh(
+  new THREE.SphereGeometry(4.5, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0xaaccff, transparent: true, opacity: 0.25 })
+);
+moonGroup.add(moonGlow);
+moonGroup.position.set(-45, 40, -30);
+moonGroup.visible = false;
+scene.add(moonGroup);
+
+const starGeo = new THREE.BufferGeometry();
+const starPos = [];
+for (let i = 0; i < 400; i++) {
+  const r = 80;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.random() * Math.PI * 0.4;
+  starPos.push(
+    Math.cos(theta) * Math.sin(phi) * r,
+    Math.cos(phi) * r,
+    Math.sin(theta) * Math.sin(phi) * r
+  );
+}
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, transparent: true, opacity: 0 });
+const stars = new THREE.Points(starGeo, starMat);
+scene.add(stars);
+
+const clouds = [];
+for (let i = 0; i < 8; i++) {
+  const cloudGroup = new THREE.Group();
+  const puffCount = 3 + Math.floor(Math.random() * 3);
+  for (let j = 0; j < puffCount; j++) {
+    const puff = new THREE.Mesh(
+      new THREE.SphereGeometry(1.5 + Math.random() * 1.5, 10, 10),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0.85 })
+    );
+    puff.position.set(
+      (j - puffCount/2) * 1.8 + Math.random() * 0.5,
+      Math.random() * 0.5,
+      Math.random() * 0.5
+    );
+    cloudGroup.add(puff);
+  }
+  cloudGroup.position.set(
+    (Math.random() - 0.5) * 60,
+    15 + Math.random() * 8,
+    (Math.random() - 0.5) * 60
+  );
+  cloudGroup.userData.speed = 0.3 + Math.random() * 0.4;
+  cloudGroup.scale.setScalar(0.8 + Math.random() * 0.7);
+  scene.add(cloudGroup);
+  clouds.push(cloudGroup);
+}
+
+const birds = [];
+function taoChim() {
+  const group = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8 });
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.5, 4, 8), bodyMat);
+  body.rotation.z = Math.PI / 2;
+  group.add(body);
+  const leftWing = new THREE.Group();
+  const leftWingMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.04, 0.3), bodyMat);
+  leftWingMesh.position.x = -0.35;
+  leftWing.add(leftWingMesh);
+  leftWing.position.set(-0.05, 0.1, 0);
+  group.add(leftWing);
+  const rightWing = new THREE.Group();
+  const rightWingMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.04, 0.3), bodyMat);
+  rightWingMesh.position.x = 0.35;
+  rightWing.add(rightWingMesh);
+  rightWing.position.set(0.05, 0.1, 0);
+  group.add(rightWing);
+  group.userData.leftWing = leftWing;
+  group.userData.rightWing = rightWing;
+  return group;
+}
+for (let i = 0; i < 5; i++) {
+  const bird = taoChim();
+  bird.userData.radius = 18 + Math.random() * 8;
+  bird.userData.angle = Math.random() * Math.PI * 2;
+  bird.userData.speed = 0.15 + Math.random() * 0.1;
+  bird.userData.height = 12 + Math.random() * 4;
+  bird.userData.phase = Math.random() * Math.PI * 2;
+  bird.scale.setScalar(1.2);
+  scene.add(bird);
+  birds.push(bird);
+}
+
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(25, 64),
+  new THREE.MeshStandardMaterial({ color: 0x3d5a2a, roughness: 0.95 })
+);
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const dirt = new THREE.Mesh(
+  new THREE.CircleGeometry(3.5, 32),
+  new THREE.MeshStandardMaterial({ color: 0x5a3a22, roughness: 1 })
+);
+dirt.rotation.x = -Math.PI/2;
+dirt.position.y = 0.01;
+dirt.receiveShadow = true;
+scene.add(dirt);
+
+const bladeGeo = new THREE.PlaneGeometry(0.08, 0.5);
+bladeGeo.translate(0, 0.25, 0);
+const bladeMat = new THREE.MeshStandardMaterial({ color: 0x5cb85c, side: THREE.DoubleSide, roughness: 0.8 });
+const grassCount = 2200;
+const grass = new THREE.InstancedMesh(bladeGeo, bladeMat, grassCount);
+grass.castShadow = true; grass.receiveShadow = true;
+const dummy = new THREE.Object3D();
+for (let i = 0; i < grassCount; i++) {
+  const r = 1.5 + Math.random() * 20;
+  const a = Math.random() * Math.PI * 2;
+  dummy.position.set(Math.cos(a)*r, 0, Math.sin(a)*r);
+  dummy.rotation.y = Math.random() * Math.PI;
+  const s = 0.7 + Math.random() * 1.1;
+  dummy.scale.set(s, s * (0.8 + Math.random()*0.6), s);
+  dummy.updateMatrix();
+  grass.setMatrixAt(i, dummy.matrix);
+}
+grass.instanceMatrix.needsUpdate = true;
+scene.add(grass);
+
+for (let i = 0; i < 30; i++) {
+  const a = Math.random()*Math.PI*2;
+  const r = 2 + Math.random()*12;
+  const flower = new THREE.Mesh(
+    new THREE.SphereGeometry(0.08, 6, 6),
+    new THREE.MeshStandardMaterial({
+      color: [0xff6b9d,0xffd166,0xffffff,0xff9f4a][Math.floor(Math.random()*4)],
+      emissive: 0x332211, emissiveIntensity: 0.3
+    })
+  );
+  flower.position.set(Math.cos(a)*r, 0.25, Math.sin(a)*r);
+  flower.castShadow = true;
+  scene.add(flower);
+}
+
+for (let i = 0; i < 40; i++) {
+  const rock = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(0.06 + Math.random()*0.1, 0),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color().setHSL(0.08, 0.1, 0.25 + Math.random()*0.15),
+      roughness: 1
+    })
+  );
+  const r = 1 + Math.random() * 15;
+  const a = Math.random() * Math.PI * 2;
+  rock.position.set(Math.cos(a)*r, 0.04, Math.sin(a)*r);
+  rock.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+  rock.castShadow = rock.receiveShadow = true;
+  scene.add(rock);
+}
+
+const butterflies = [];
+for (let i = 0; i < 6; i++) {
+  const bf = new THREE.Group();
+  const wingMat = new THREE.MeshStandardMaterial({ color: [0xff9f4a,0xff6b9d,0xffd166][i%3], transparent: true, opacity: 0.85, side: THREE.DoubleSide });
+  const leftWing = new THREE.Mesh(new THREE.CircleGeometry(0.25, 8), wingMat);
+  leftWing.position.x = -0.2;
+  leftWing.rotation.y = Math.PI / 4;
+  bf.add(leftWing);
+  const rightWing = new THREE.Mesh(new THREE.CircleGeometry(0.25, 8), wingMat);
+  rightWing.position.x = 0.2;
+  rightWing.rotation.y = -Math.PI / 4;
+  bf.add(rightWing);
+  bf.userData.leftWing = leftWing;
+  bf.userData.rightWing = rightWing;
+  bf.userData.radius = 5 + Math.random() * 4;
+  bf.userData.angle = Math.random() * Math.PI * 2;
+  bf.userData.speed = 0.4 + Math.random() * 0.3;
+  bf.userData.height = 1.5 + Math.random() * 2;
+  bf.userData.phase = Math.random() * Math.PI * 2;
+  scene.add(bf);
+  butterflies.push(bf);
+}
+
+function taoCanh(points, radius, color, segs = 32) {
+  const curve = new THREE.CatmullRomCurve3(points);
+  const geo = new THREE.TubeGeometry(curve, segs, radius, 10, false);
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.92 }));
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  return mesh;
+}
+
+function taoLaTexture(hue) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 64, 8, 64, 64, 62);
+  grad.addColorStop(0, new THREE.Color().setHSL(hue, 0.6, 0.55).getStyle());
+  grad.addColorStop(0.6, new THREE.Color().setHSL(hue, 0.7, 0.35).getStyle());
+  grad.addColorStop(1, new THREE.Color().setHSL(hue, 0.8, 0.2).getStyle());
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(64, 8);
+  ctx.bezierCurveTo(110, 30, 110, 98, 64, 120);
+  ctx.bezierCurveTo(18, 98, 18, 30, 64, 8);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(10,40,10,0.65)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(64, 12); ctx.lineTo(64, 116); ctx.stroke();
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 4; i++) {
+    const y = 30 + i*22;
+    ctx.beginPath(); ctx.moveTo(64, y); ctx.quadraticCurveTo(45, y+5, 30, y-3); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(64, y); ctx.quadraticCurveTo(83, y+5, 98, y-3); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const leafTexA = taoLaTexture(0.28);
+const leafTexB = taoLaTexture(0.33);
+const leafGeo = new THREE.PlaneGeometry(1, 1);
+
+function taoCumLa(position, count, spread, scaleRange, tex) {
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex, transparent: true, alphaTest: 0.4,
+    side: THREE.DoubleSide, roughness: 0.7
+  });
+  const mesh = new THREE.InstancedMesh(leafGeo, mat, count);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  const d = new THREE.Object3D();
+  const anchors = [];
+  for (let i = 0; i < count; i++) {
+    const off = new THREE.Vector3(
+      (Math.random()-0.5)*spread*2,
+      (Math.random()-0.5)*spread*2,
+      (Math.random()-0.5)*spread*2
+    );
+    const p = position.clone().add(off);
+    const s = scaleRange[0] + Math.random()*(scaleRange[1]-scaleRange[0]);
+    d.position.copy(p);
+    d.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+    d.scale.setScalar(s);
+    d.updateMatrix();
+    mesh.setMatrixAt(i, d.matrix);
+    anchors.push({ pos: p.clone(), base: d.rotation.clone(), scale: s, phase: Math.random()*Math.PI*2 });
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.userData.anchors = anchors;
+  return mesh;
+}
+
+const treeGroup = new THREE.Group();
+const trunkPoints = [
+  new THREE.Vector3(0, 0, 0),
+  new THREE.Vector3(0.15, 1.2, 0.08),
+  new THREE.Vector3(-0.2, 2.6, 0.15),
+  new THREE.Vector3(0.1, 4.0, -0.1),
+  new THREE.Vector3(-0.05, 5.2, 0.05),
+  new THREE.Vector3(0, 6.0, 0)
+];
+treeGroup.add(taoCanh(trunkPoints, 0.55, 0x5a3a22, 40));
+
+for (let k = 0; k < 4; k++) {
+  const offsets = [];
+  for (let i = 0; i < 10; i++) {
+    const t = i / 9;
+    const p = trunkPoints[0].clone().lerp(trunkPoints[5], t);
+    const a = t * Math.PI * 2 * 2.5 + k * 1.8;
+    p.x += Math.cos(a) * 0.58 * (1 - t*0.4);
+    p.z += Math.sin(a) * 0.58 * (1 - t*0.4);
+    p.y = t * 6.0;
+    offsets.push(p);
+  }
+  treeGroup.add(taoCanh(offsets, 0.05, 0x452a15, 24));
+}
+
+for (let i = 0; i < 7; i++) {
+  const angle = (i / 7) * Math.PI * 2;
+  const rp = [
+    new THREE.Vector3(0, 0.4, 0),
+    new THREE.Vector3(Math.cos(angle)*0.9, 0.08, Math.sin(angle)*0.9),
+    new THREE.Vector3(Math.cos(angle)*2.0, -0.02, Math.sin(angle)*2.0)
+  ];
+  treeGroup.add(taoCanh(rp, 0.28, 0x4a2e1a, 20));
+}
+
+const branches = [
+  { start: new THREE.Vector3(0.1, 4.0, -0.1), end: new THREE.Vector3(2.4, 6.0, 0.8) },
+  { start: new THREE.Vector3(0.1, 4.0, -0.1), end: new THREE.Vector3(-2.5, 5.9, 0.5) },
+  { start: new THREE.Vector3(-0.05, 5.2, 0.05), end: new THREE.Vector3(0.8, 7.0, -1.6) },
+  { start: new THREE.Vector3(-0.2, 2.6, 0.15), end: new THREE.Vector3(-1.9, 4.2, -1.8) },
+  { start: new THREE.Vector3(0.15, 3.2, 0), end: new THREE.Vector3(2.1, 4.5, -1.4) },
+  { start: new THREE.Vector3(-0.1, 4.6, 0), end: new THREE.Vector3(-1.5, 5.5, 1.8) },
+  { start: new THREE.Vector3(0.2, 4.5, 0.1), end: new THREE.Vector3(1.8, 5.8, 2.0) }
+];
+const clusterPoints = [];
+branches.forEach(b => {
+  const mid2 = b.start.clone().lerp(b.end, 0.7).add(new THREE.Vector3((Math.random()-0.5)*0.4, 0.3, (Math.random()-0.5)*0.4));
+  treeGroup.add(taoCanh([b.start, mid2, b.end], 0.18, 0x5a3a22, 28));
+  clusterPoints.push(b.end, mid2);
+});
+clusterPoints.push(new THREE.Vector3(0, 6.8, 0), new THREE.Vector3(0.6, 6.6, 0.4), new THREE.Vector3(-0.7, 6.5, -0.5));
+
+const leafMeshes = [];
+clusterPoints.forEach((p, idx) => {
+  const cluster = taoCumLa(p, 28 + Math.floor(Math.random()*15), 1.0, [0.35, 0.6], idx%2?leafTexA:leafTexB);
+  leafMeshes.push(cluster);
+  treeGroup.add(cluster);
+});
+for (let i = 0; i < 12; i++) {
+  const p = new THREE.Vector3((Math.random()-0.5)*5, 4.5 + Math.random()*2.5, (Math.random()-0.5)*5);
+  const cluster = taoCumLa(p, 12, 0.7, [0.25, 0.45], i%2?leafTexA:leafTexB);
+  leafMeshes.push(cluster);
+  treeGroup.add(cluster);
+}
+treeGroup.position.y = 0;
+scene.add(treeGroup);
+
+for (let i = 0; i < 12; i++) {
+  const a = Math.random()*Math.PI*2;
+  const r = 4 + Math.random()*7;
+  const bush = taoCumLa(
+    new THREE.Vector3(Math.cos(a)*r, 0.4, Math.sin(a)*r),
+    14, 0.5, [0.25, 0.4], i%2?leafTexA:leafTexB
+  );
+  bush.scale.setScalar(0.8 + Math.random()*0.7);
+  leafMeshes.push(bush);
+  scene.add(bush);
+}
+
+const terrariumGroup = new THREE.Group();
+terrariumGroup.visible = false;
+scene.add(terrariumGroup);
+
+const pedestalMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.7, metalness: 0.1 });
+const pedestalBase = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.5, 0.4, 64), pedestalMat);
+pedestalBase.position.y = -0.2;
+pedestalBase.castShadow = true;
+pedestalBase.receiveShadow = true;
+terrariumGroup.add(pedestalBase);
+
+const pedestalTrim = new THREE.Mesh(
+  new THREE.TorusGeometry(3.2, 0.08, 8, 64),
+  new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.8 })
+);
+pedestalTrim.rotation.x = Math.PI/2;
+pedestalTrim.position.y = 0.02;
+terrariumGroup.add(pedestalTrim);
+
+function taoBienGoChu(text) {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#6b4423';
+  ctx.fillRect(0, 0, 1024, 128);
+  const grad = ctx.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 128);
+  ctx.font = 'bold 52px Georgia, serif';
+  ctx.fillStyle = '#ffd166';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.fillText(text, 512, 64);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return tex;
+}
+const bienGoTex = taoBienGoChu('THCS TRẦN HẢI PHỤNG - NHÓM 7');
+const bienGoMat = new THREE.MeshStandardMaterial({ map: bienGoTex, roughness: 0.7, metalness: 0.2 });
+const bienGoGeo = new THREE.CylinderGeometry(3.22, 3.22, 0.35, 64, 1, true, 0, Math.PI * 2);
+const bienGo = new THREE.Mesh(bienGoGeo, bienGoMat);
+bienGo.position.y = -0.2;
+terrariumGroup.add(bienGo);
+
+const terrariumSoil = new THREE.Mesh(
+  new THREE.CylinderGeometry(2.9, 2.9, 0.5, 48),
+  new THREE.MeshStandardMaterial({ color: 0x3a2515, roughness: 1 })
+);
+terrariumSoil.position.y = 0.25;
+terrariumSoil.receiveShadow = true;
+terrariumGroup.add(terrariumSoil);
+
+for (let i = 0; i < 15; i++) {
+  const a = Math.random()*Math.PI*2;
+  const r = Math.random()*2.5;
+  const pebble = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(0.05 + Math.random()*0.08, 0),
+    new THREE.MeshStandardMaterial({
+      color: new THREE.Color().setHSL(0.08, 0.15, 0.3 + Math.random()*0.2),
+      roughness: 0.9
+    })
+  );
+  pebble.position.set(Math.cos(a)*r, 0.52, Math.sin(a)*r);
+  pebble.castShadow = true;
+  terrariumGroup.add(pebble);
+}
+
+for (let i = 0; i < 80; i++) {
+  const a = Math.random()*Math.PI*2;
+  const r = 0.5 + Math.random()*2.3;
+  const blade = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.05, 0.25),
+    new THREE.MeshStandardMaterial({ color: 0x5cb85c, side: THREE.DoubleSide, roughness: 0.8 })
+  );
+  blade.position.set(Math.cos(a)*r, 0.62, Math.sin(a)*r);
+  blade.rotation.y = Math.random()*Math.PI;
+  blade.rotation.z = (Math.random()-0.5)*0.3;
+  terrariumGroup.add(blade);
+}
+
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff,
+  metalness: 0,
+  roughness: 0.05,
+  transmission: 0.95,
+  thickness: 0.5,
+  ior: 1.5,
+  transparent: true,
+  opacity: 0.35,
+  side: THREE.DoubleSide,
+  clearcoat: 1,
+  clearcoatRoughness: 0.05,
+  envMapIntensity: 1.5
+});
+const glassDome = new THREE.Mesh(
+  new THREE.SphereGeometry(3.0, 64, 48, 0, Math.PI*2, 0, Math.PI/2),
+  glassMat
+);
+glassDome.position.y = 0.5;
+terrariumGroup.add(glassDome);
+
+const topKnob = new THREE.Mesh(
+  new THREE.SphereGeometry(0.2, 16, 16),
+  new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.2, metalness: 0.9 })
+);
+topKnob.position.y = 3.5;
+terrariumGroup.add(topKnob);
+
+const glassRingBottom = new THREE.Mesh(
+  new THREE.TorusGeometry(3.0, 0.06, 8, 64),
+  new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.2, metalness: 0.9 })
+);
+glassRingBottom.rotation.x = Math.PI/2;
+glassRingBottom.position.y = 0.5;
+terrariumGroup.add(glassRingBottom);
+
+const ledLight1 = new THREE.PointLight(0x9be7ff, 2, 5);
+ledLight1.position.set(1.5, 2.5, 1.5);
+terrariumGroup.add(ledLight1);
+const ledLight2 = new THREE.PointLight(0xffd166, 2, 5);
+ledLight2.position.set(-1.5, 2.5, -1.5);
+terrariumGroup.add(ledLight2);
+const ledBulb1 = new THREE.Mesh(
+  new THREE.SphereGeometry(0.08, 8, 8),
+  new THREE.MeshBasicMaterial({ color: 0x9be7ff })
+);
+ledBulb1.position.copy(ledLight1.position);
+terrariumGroup.add(ledBulb1);
+const ledBulb2 = new THREE.Mesh(
+  new THREE.SphereGeometry(0.08, 8, 8),
+  new THREE.MeshBasicMaterial({ color: 0xffd166 })
+);
+ledBulb2.position.copy(ledLight2.position);
+terrariumGroup.add(ledBulb2);
+
+function taoMatTexture(skinTone, hairColor, hasHat, hatColor) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = new THREE.Color(skinTone).getStyle();
+  ctx.fillRect(0, 0, 128, 128);
+  ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(32, 50); ctx.lineTo(52, 48); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(76, 48); ctx.lineTo(96, 50); ctx.stroke();
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath(); ctx.arc(44, 62, 5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(84, 62, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(46, 60, 1.8, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(86, 60, 1.8, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#a83a3a'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(64, 82, 14, 0.15*Math.PI, 0.85*Math.PI); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,150,150,0.4)';
+  ctx.beginPath(); ctx.arc(30, 85, 8, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(98, 85, 8, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = hairColor;
+  ctx.beginPath();
+  ctx.moveTo(10, 45);
+  ctx.quadraticCurveTo(10, 5, 64, 5);
+  ctx.quadraticCurveTo(118, 5, 118, 45);
+  ctx.quadraticCurveTo(110, 25, 64, 25);
+  ctx.quadraticCurveTo(18, 25, 10, 45);
+  ctx.fill();
+  if (hasHat) {
+    ctx.fillStyle = hatColor;
+    ctx.beginPath(); ctx.ellipse(64, 20, 58, 14, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(64, 12, 38, 12, 0, 0, Math.PI*2); ctx.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function taoNhanVat(opts) {
+  const { shirtColor, pantsColor, skinTone, hairColor, hasHat, hatColor, hasLongHair, hasBackpack } = opts;
+  const group = new THREE.Group();
+  const skinMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.7 });
+  const shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.8 });
+  const pantsMat = new THREE.MeshStandardMaterial({ color: pantsColor, roughness: 0.85 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.9 });
+
+  const headGroup = new THREE.Group();
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.32, 24, 24),
+    new THREE.MeshStandardMaterial({ map: taoMatTexture(skinTone, hairColor, hasHat, hatColor), roughness: 0.7 })
+  );
+  head.castShadow = true;
+  headGroup.add(head);
+  if (hasLongHair) {
+    const hairBack = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 16, 0, Math.PI*2, 0, Math.PI*0.7), hairMat);
+    hairBack.position.set(0, 0.02, -0.05);
+    headGroup.add(hairBack);
+    const ponytail = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.5, 4, 8), hairMat);
+    ponytail.position.set(0, -0.3, -0.28);
+    ponytail.castShadow = true;
+    headGroup.add(ponytail);
+  }
+  if (hasHat) {
+    const hatMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.36, 0.08, 20), new THREE.MeshStandardMaterial({ color: hatColor, roughness: 0.8 }));
+    hatMesh.position.y = 0.27;
+    headGroup.add(hatMesh);
+    const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, 0.15, 20), new THREE.MeshStandardMaterial({ color: hatColor, roughness: 0.8 }));
+    hatTop.position.y = 0.36;
+    headGroup.add(hatTop);
+  }
+  headGroup.position.y = 2.15;
+  group.add(headGroup);
+
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.18, 12), skinMat);
+  neck.position.y = 1.82;
+  neck.castShadow = true;
+  group.add(neck);
+
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.32, 0.6, 6, 16), shirtMat);
+  torso.position.y = 1.4;
+  torso.castShadow = true;
+  group.add(torso);
+
+  const collar = new THREE.Mesh(
+    new THREE.TorusGeometry(0.18, 0.05, 6, 16),
+    new THREE.MeshStandardMaterial({ color: 0x1a3a5c, roughness: 0.7 })
+  );
+  collar.rotation.x = Math.PI/2;
+  collar.position.y = 1.78;
+  group.add(collar);
+
+  if (hasBackpack) {
+    const backpack = new THREE.Mesh(
+      new THREE.BoxGeometry(0.45, 0.55, 0.25),
+      new THREE.MeshStandardMaterial({ color: 0x2d5a7a, roughness: 0.8 })
+    );
+    backpack.position.set(0, 1.45, -0.32);
+    backpack.castShadow = true;
+    group.add(backpack);
+    const strap = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.5, 0.05),
+      new THREE.MeshStandardMaterial({ color: 0x1a3a5c })
+    );
+    strap.position.set(-0.15, 1.55, 0.1);
+    group.add(strap);
+    const strap2 = strap.clone();
+    strap2.position.x = 0.15;
+    group.add(strap2);
+  }
+
+  const leftArmGroup = new THREE.Group();
+  leftArmGroup.position.set(-0.38, 1.65, 0);
+  const leftUpper = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.35, 4, 10), shirtMat);
+  leftUpper.position.y = -0.2;
+  leftUpper.castShadow = true;
+  leftArmGroup.add(leftUpper);
+  const leftForearmGroup = new THREE.Group();
+  leftForearmGroup.position.y = -0.42;
+  const leftForearm = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.32, 4, 10), skinMat);
+  leftForearm.position.y = -0.18;
+  leftForearm.castShadow = true;
+  leftForearmGroup.add(leftForearm);
+  const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), skinMat);
+  leftHand.position.y = -0.4;
+  leftHand.castShadow = true;
+  leftForearmGroup.add(leftHand);
+  leftArmGroup.add(leftForearmGroup);
+  group.add(leftArmGroup);
+
+  const rightArmGroup = new THREE.Group();
+  rightArmGroup.position.set(0.38, 1.65, 0);
+  const rightUpper = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.35, 4, 10), shirtMat);
+  rightUpper.position.y = -0.2;
+  rightUpper.castShadow = true;
+  rightArmGroup.add(rightUpper);
+  const rightForearmGroup = new THREE.Group();
+  rightForearmGroup.position.y = -0.42;
+  const rightForearm = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.32, 4, 10), skinMat);
+  rightForearm.position.y = -0.18;
+  rightForearm.castShadow = true;
+  rightForearmGroup.add(rightForearm);
+  const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), skinMat);
+  rightHand.position.y = -0.4;
+  rightHand.castShadow = true;
+  rightForearmGroup.add(rightHand);
+  rightArmGroup.add(rightForearmGroup);
+  group.add(rightArmGroup);
+
+  const leftLegGroup = new THREE.Group();
+  leftLegGroup.position.set(-0.16, 0.85, 0);
+  const leftThigh = new THREE.Mesh(new THREE.CapsuleGeometry(0.13, 0.42, 4, 10), pantsMat);
+  leftThigh.position.y = -0.28;
+  leftThigh.castShadow = true;
+  leftLegGroup.add(leftThigh);
+  const leftShinGroup = new THREE.Group();
+  leftShinGroup.position.y = -0.55;
+  const leftShin = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.4, 4, 10), pantsMat);
+  leftShin.position.y = -0.22;
+  leftShin.castShadow = true;
+  leftShinGroup.add(leftShin);
+  const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.32), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 }));
+  leftShoe.position.set(0, -0.46, 0.05);
+  leftShoe.castShadow = true;
+  leftShinGroup.add(leftShoe);
+  leftLegGroup.add(leftShinGroup);
+  group.add(leftLegGroup);
+
+  const rightLegGroup = new THREE.Group();
+  rightLegGroup.position.set(0.16, 0.85, 0);
+  const rightThigh = new THREE.Mesh(new THREE.CapsuleGeometry(0.13, 0.42, 4, 10), pantsMat);
+  rightThigh.position.y = -0.28;
+  rightThigh.castShadow = true;
+  rightLegGroup.add(rightThigh);
+  const rightShinGroup = new THREE.Group();
+  rightShinGroup.position.y = -0.55;
+  const rightShin = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.4, 4, 10), pantsMat);
+  rightShin.position.y = -0.22;
+  rightShin.castShadow = true;
+  rightShinGroup.add(rightShin);
+  const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.32), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 }));
+  rightShoe.position.set(0, -0.46, 0.05);
+  rightShoe.castShadow = true;
+  rightShinGroup.add(rightShoe);
+  rightLegGroup.add(rightShinGroup);
+  group.add(rightLegGroup);
+
+  const wateringCan = new THREE.Group();
+  const canBody = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, 0.28, 12), new THREE.MeshStandardMaterial({ color: 0x4a9eff, roughness: 0.4, metalness: 0.3 }));
+  canBody.castShadow = true;
+  wateringCan.add(canBody);
+  const canSpout = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.3, 8), new THREE.MeshStandardMaterial({ color: 0x4a9eff, roughness: 0.4, metalness: 0.3 }));
+  canSpout.position.set(0.16, 0.08, 0.05);
+  canSpout.rotation.z = -Math.PI/3;
+  canSpout.castShadow = true;
+  wateringCan.add(canSpout);
+  const canHandle = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.025, 6, 12, Math.PI), new THREE.MeshStandardMaterial({ color: 0x4a9eff, roughness: 0.4, metalness: 0.3 }));
+  canHandle.position.set(-0.15, 0.05, 0);
+  canHandle.rotation.y = Math.PI/2;
+  wateringCan.add(canHandle);
+  wateringCan.position.set(0, -0.5, 0.1);
+  wateringCan.rotation.z = 0.3;
+  leftForearmGroup.add(wateringCan);
+
+  group.userData = {
+    headGroup, torso,
+    leftArmGroup, leftForearmGroup,
+    rightArmGroup, rightForearmGroup,
+    leftLegGroup, leftShinGroup,
+    rightLegGroup, rightShinGroup,
+    wateringCan,
+    phase: Math.random() * Math.PI * 2
+  };
+  group.scale.setScalar(0.65);
+  return group;
+}
+
+const characters = [];
+const charConfigs = [
+  { shirtColor: 0xffffff, pantsColor: 0x1d3557, skinTone: 0xf5d0b1, hairColor: '#4a3323', hasHat: false, hasLongHair: false, hasBackpack: true },
+  { shirtColor: 0xffffff, pantsColor: 0x1d3557, skinTone: 0xf5d0b1, hairColor: '#b7094c', hasHat: false, hasLongHair: true, hasBackpack: true },
+  { shirtColor: 0xffffff, pantsColor: 0x1d3557, skinTone: 0xf5d0b1, hairColor: '#4a3323', hasHat: false, hasLongHair: false, hasBackpack: true },
+  { shirtColor: 0xffffff, pantsColor: 0x1d3557, skinTone: 0xf5d0b1, hairColor: '#7209b7', hasHat: false, hasLongHair: true, hasBackpack: true },
+  { shirtColor: 0xffffff, pantsColor: 0x1d3557, skinTone: 0xf5d0b1, hairColor: '#2b2d42', hasHat: false, hasLongHair: false, hasBackpack: true }
+];
+charConfigs.forEach(cfg => {
+  const char = taoNhanVat(cfg);
+  char.visible = false;
+  scene.add(char);
+  characters.push(char);
+});
+
+const clock = new THREE.Clock();
+const windDummy = new THREE.Object3D();
+function chayHieuUngGio(t) {
+  leafMeshes.forEach(mesh => {
+    const anchors = mesh.userData.anchors;
+    if (!anchors) return;
+    anchors.forEach((a, i) => {
+      const sway = Math.sin(t * 1.6 + a.phase) * 0.18;
+      const sway2 = Math.cos(t * 1.1 + a.phase * 1.3) * 0.12;
+      windDummy.position.copy(a.pos);
+      windDummy.rotation.set(a.base.x + sway, a.base.y + sway2, a.base.z + sway * 0.7);
+      windDummy.scale.setScalar(a.scale);
+      windDummy.updateMatrix();
+      mesh.setMatrixAt(i, windDummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+  });
+}
+
+const DROP_COUNT = 80;
+const dropletGeo = new THREE.BufferGeometry();
+const dropPositions = new Float32Array(DROP_COUNT * 3);
+const dropVel = [];
+for (let i = 0; i < DROP_COUNT; i++) dropVel.push(new THREE.Vector3());
+dropletGeo.setAttribute('position', new THREE.BufferAttribute(dropPositions, 3));
+const dropMat = new THREE.PointsMaterial({ color: 0x9be7ff, size: 0.14, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+const droplets = new THREE.Points(dropletGeo, dropMat);
+droplets.visible = false;
+scene.add(droplets);
+let dropActive = false;
+let dropLife = 0;
+
+function banNuoc(origin) {
+  droplets.visible = true;
+  dropActive = true;
+  dropLife = 0;
+  const pos = dropletGeo.attributes.position.array;
+  for (let i = 0; i < DROP_COUNT; i++) {
+    const a = Math.random()*Math.PI*2;
+    const r = Math.random()*1.2;
+    pos[i*3+0] = origin.x + Math.cos(a)*r;
+    pos[i*3+1] = origin.y + Math.random()*0.4;
+    pos[i*3+2] = origin.z + Math.sin(a)*r;
+    dropVel[i].set((Math.random()-0.5)*0.08, -0.1 - Math.random()*0.06, (Math.random()-0.5)*0.08);
+  }
+  dropletGeo.attributes.position.needsUpdate = true;
+  dirt.material.color.setHex(0x3a2515);
+  dirt.material.color.lerp(new THREE.Color(0x5a3a22), 0.3);
+}
+
+const charStates = characters.map(() => ({ state: 'waiting', progress: 0, startPos: new THREE.Vector3(), endPos: new THREE.Vector3(), waterTime: 0 }));
+
+function getStartPositions() {
+  return [
+    new THREE.Vector3(-8, 0, 6),
+    new THREE.Vector3(8, 0, 5),
+    new THREE.Vector3(-7, 0, -5),
+    new THREE.Vector3(7, 0, -6),
+    new THREE.Vector3(0, 0, 9)
+  ];
+}
+function getWaterPositions() {
+  const arr = [];
+  for (let i = 0; i < 5; i++) {
+    const angle = (i / 5) * Math.PI * 2 - Math.PI/2;
+    arr.push(new THREE.Vector3(Math.cos(angle)*2.6, 0, Math.sin(angle)*2.6));
+  }
+  return arr;
+}
+
+function batDauChay() {
+  const starts = getStartPositions();
+  const waters = getWaterPositions();
+  charStates.forEach((st, i) => {
+    st.state = 'running';
+    st.progress = 0;
+    st.startPos = starts[i].clone();
+    st.endPos = waters[i].clone();
+    characters[i].position.copy(st.startPos);
+    characters[i].visible = true;
+    const dir = new THREE.Vector3().subVectors(st.endPos, st.startPos);
+    characters[i].rotation.y = Math.atan2(dir.x, dir.z);
+  });
+}
+
+function capNhatNhanVat(dt, t) {
+  charStates.forEach((st, i) => {
+    const char = characters[i];
+    if (!char.visible) return;
+    const ud = char.userData;
+
+    if (st.state === 'running') {
+      st.progress += dt * 0.45;
+      const p = Math.min(st.progress, 1);
+      const ease = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2, 2)/2;
+      char.position.lerpVectors(st.startPos, st.endPos, ease);
+      const phase = t * 14 + ud.phase;
+      ud.leftLegGroup.rotation.x = Math.sin(phase) * 0.9;
+      ud.rightLegGroup.rotation.x = Math.sin(phase + Math.PI) * 0.9;
+      ud.leftShinGroup.rotation.x = Math.max(0, Math.sin(phase + 0.5)) * 0.7;
+      ud.rightShinGroup.rotation.x = Math.max(0, Math.sin(phase + Math.PI + 0.5)) * 0.7;
+      ud.rightArmGroup.rotation.x = Math.sin(phase + Math.PI) * 0.8;
+      ud.leftArmGroup.rotation.x = Math.sin(phase) * 0.4 - 0.3;
+      ud.rightForearmGroup.rotation.x = -0.3 + Math.sin(phase + Math.PI) * 0.3;
+      char.position.y = Math.abs(Math.sin(phase)) * 0.08;
+      char.rotation.x = 0.08;
+      if (p >= 1) {
+        st.state = 'watering';
+        st.waterTime = 0;
+        char.rotation.x = 0;
+        char.rotation.y = Math.atan2(-char.position.x, -char.position.z);
+        ud.leftLegGroup.rotation.x = 0;
+        ud.rightLegGroup.rotation.x = 0;
+        ud.leftShinGroup.rotation.x = 0;
+        ud.rightShinGroup.rotation.x = 0;
+        ud.rightArmGroup.rotation.x = 0;
+        ud.rightForearmGroup.rotation.x = 0;
+      }
+    } else if (st.state === 'watering') {
+      st.waterTime += dt;
+      char.rotation.x = 0.15;
+      ud.leftArmGroup.rotation.x = -0.7;
+      ud.leftForearmGroup.rotation.x = -0.5;
+      ud.rightArmGroup.rotation.x = 0.3;
+      ud.rightArmGroup.rotation.z = -0.4;
+      char.position.y = Math.sin(t * 3 + ud.phase) * 0.03;
+      ud.headGroup.rotation.x = Math.sin(t * 2 + ud.phase) * 0.1;
+      if (Math.random() < 0.3) {
+        const canWorldPos = new THREE.Vector3();
+        ud.wateringCan.getWorldPosition(canWorldPos);
+        canWorldPos.y += 0.3;
+        banNuoc(canWorldPos);
+      }
+      if (st.waterTime > 1.8) {
+        st.state = 'returning';
+        st.progress = 0;
+        st.startPos = char.position.clone();
+        st.endPos = getStartPositions()[i].clone();
+        const dir = new THREE.Vector3().subVectors(st.endPos, st.startPos);
+        char.rotation.y = Math.atan2(dir.x, dir.z);
+        char.rotation.x = 0;
+        ud.headGroup.rotation.x = 0;
+        ud.leftArmGroup.rotation.x = 0;
+        ud.leftForearmGroup.rotation.x = 0;
+        ud.rightArmGroup.rotation.x = 0;
+        ud.rightArmGroup.rotation.z = 0;
+      }
+    } else if (st.state === 'returning') {
+      st.progress += dt * 0.5;
+      const p = Math.min(st.progress, 1);
+      const ease = p*p*(3-2*p);
+      char.position.lerpVectors(st.startPos, st.endPos, ease);
+      const phase = t * 14 + ud.phase;
+      ud.leftLegGroup.rotation.x = Math.sin(phase) * 0.9;
+      ud.rightLegGroup.rotation.x = Math.sin(phase + Math.PI) * 0.9;
+      ud.leftShinGroup.rotation.x = Math.max(0, Math.sin(phase + 0.5)) * 0.7;
+      ud.rightShinGroup.rotation.x = Math.max(0, Math.sin(phase + Math.PI + 0.5)) * 0.7;
+      ud.rightArmGroup.rotation.x = Math.sin(phase + Math.PI) * 0.8;
+      ud.leftArmGroup.rotation.x = Math.sin(phase) * 0.4 - 0.3;
+      ud.rightForearmGroup.rotation.x = -0.3 + Math.sin(phase + Math.PI) * 0.3;
+      char.position.y = Math.abs(Math.sin(phase)) * 0.08;
+      char.rotation.x = 0.08;
+      if (p >= 1) {
+        st.state = 'done';
+        char.visible = false;
+      }
+    }
+  });
+}
+
+let currentStep = 0;
+const targetScale = [0.02, 0.35, 0.65, 0.85, 1.0];
+let currentScale = 0.02;
+treeGroup.scale.setScalar(currentScale);
+
+let packing = false;
+let packProgress = 0;
+const PACK_DURATION = 2.2;
+
+const progressBar = document.getElementById('progressBar');
+const statusText = document.getElementById('statusText');
+const waterHint = document.getElementById('waterHint');
+const finalBox = document.getElementById('finalBox');
+const messages = [
+  document.getElementById('msg-1'),
+  document.getElementById('msg-2'),
+  document.getElementById('msg-3'),
+  document.getElementById('msg-4')
+];
+const factText = document.getElementById('factText');
+const phaseTexts = [
+  "Hạt giống nằm dưới đất (0%)",
+  "Mầm non vươn chồi (25%)",
+  "Cây non đâm chồi nảy lộc (50%)",
+  "Cây cứng cáp tỏa cành (75%)",
+  "ĐẠI THỤ 3D SIÊU CHI TIẾT TỎA SÁNG!"
+];
+const facts = [
+  "Một cây xanh trưởng thành có thể hấp thụ tới 22kg khí CO2 mỗi năm.",
+  "Một hecta rừng có thể giữ được 50 tấn bụi trong không khí.",
+  "Trồng 1 cây xanh tương đương với việc giảm 25% lượng khí thải của một chiếc xe.",
+  "Rễ cây giúp giữ đất, chống xói mòn và lũ lụt hiệu quả.",
+  "Một cây cổ thụ có thể tạo ra lượng oxy đủ cho 4 người hít thở mỗi ngày."
+];
+let animating = false;
+
+function hienSuThat() {
+  const fact = facts[Math.floor(Math.random() * facts.length)];
+  factText.textContent = fact;
+  factText.classList.add('show');
+  setTimeout(() => factText.classList.remove('show'), 5000);
+}
+
+function tuoiCay() {
+  if (currentStep >= 4 || animating) return;
+  animating = true;
+  waterHint.disabled = true;
+  batDauChay();
+  setTimeout(() => {
+    currentStep++;
+    const percent = currentStep * 25;
+    progressBar.style.width = percent + '%';
+    statusText.textContent = `Mức độ sinh trưởng: ${percent}% (${phaseTexts[currentStep]})`;
+    if (currentStep === 1) messages[0].classList.add('show');
+    if (currentStep === 2) messages[1].classList.add('show');
+    if (currentStep === 3) messages[2].classList.add('show');
+    if (currentStep === 4) {
+      messages[3].classList.add('show');
+      setTimeout(() => batDauDongGoi(), 800);
+    }
+    hienSuThat();
+    animating = false;
+    waterHint.disabled = false;
+  }, 4200);
+}
+waterHint.addEventListener('click', tuoiCay);
+
+function batDauDongGoi() {
+  packing = true;
+  packProgress = 0;
+  terrariumGroup.visible = true;
+  terrariumGroup.position.set(0, 0, 0);
+  terrariumGroup.scale.setScalar(0.01);
+  terrariumGroup.rotation.y = 0;
+  waterHint.textContent = 'Đang đóng gói bảo vật xanh...';
+  waterHint.disabled = true;
+  statusText.textContent = 'Bước cuối: Đưa đại thụ vào lồng kính bảo tồn';
+}
+
+function capNhatDongGoi(dt) {
+  if (!packing) return;
+  packProgress += dt / PACK_DURATION;
+  const p = Math.min(packProgress, 1);
+  const ease = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2, 3)/2;
+
+  const terrScale = 0.01 + ease * 0.99;
+  terrariumGroup.scale.setScalar(terrScale);
+
+  const treeScale = 1.0 - ease * 0.72;
+  treeGroup.scale.setScalar(targetScale[4] * treeScale);
+  treeGroup.position.set(0, 0.5 * ease, 0);
+
+  terrariumGroup.rotation.y = ease * Math.PI * 0.5;
+
+  if (p < 1) {
+    const targetCamDist = 9;
+    const currentDist = camera.position.length();
+    const newDist = currentDist + (targetCamDist - currentDist) * dt * 0.8;
+    const dir = camera.position.clone().normalize();
+    camera.position.copy(dir.multiplyScalar(newDist));
+    controls.target.lerp(new THREE.Vector3(0, 2.0, 0), dt * 0.8);
+  }
+
+  if (p >= 1) {
+    packing = false;
+    treeGroup.scale.setScalar(targetScale[4] * 0.28);
+    treeGroup.position.set(0, 0.5, 0);
+
+    controls.target.set(0, 1.8, 0);
+    controls.minDistance = 4;
+    controls.maxDistance = 14;
+    controls.minPolarAngle = 0.2;
+    controls.maxPolarAngle = Math.PI/2 - 0.02;
+
+    waterHint.textContent = 'Kéo chuột để xoay lồng kính 360 độ';
+    waterHint.disabled = true;
+    waterHint.style.cursor = 'default';
+
+    statusText.textContent = 'BẢO VẬT XANH ĐÃ ĐƯỢC BẢO TỒN TRONG LỒNG KÍNH';
+    finalBox.style.display = 'block';
+    banPhaoHoaGiay();
+  }
+}
+
+function banPhaoHoaGiay() {
+  const layer = document.getElementById('confettiLayer');
+  const colors = ['#ffd166', '#95d5b2', '#ff6b9d', '#4a9eff', '#ffffff', '#b7e4c7'];
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement('div');
+    c.classList.add('confetti');
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.width = (8 + Math.random() * 8) + 'px';
+    c.style.height = (8 + Math.random() * 12) + 'px';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    c.style.animation = `confettiFall ${2 + Math.random() * 2}s linear forwards`;
+    c.style.animationDelay = Math.random() * 0.5 + 's';
+    layer.appendChild(c);
+    setTimeout(() => c.remove(), 4500);
+  }
+}
+
+const replayBtn = document.getElementById('replayBtn');
+replayBtn.addEventListener('click', () => {
+  currentStep = 0;
+  currentScale = 0.02;
+  treeGroup.scale.setScalar(currentScale);
+  treeGroup.position.set(0, 0, 0);
+  progressBar.style.width = '0%';
+  statusText.textContent = 'Mức độ sinh trưởng: 0% (Hạt giống dưới đất)';
+  waterHint.textContent = 'Nhấn để 5 bạn nhỏ tưới cây';
+  waterHint.disabled = false;
+  waterHint.style.cursor = 'pointer';
+  finalBox.style.display = 'none';
+  animating = false;
+  packing = false;
+  packProgress = 0;
+  messages.forEach(m => m.classList.remove('show'));
+  characters.forEach(c => { c.visible = false; });
+  charStates.forEach(st => { st.state = 'waiting'; });
+  terrariumGroup.visible = false;
+  terrariumGroup.scale.setScalar(0.01);
+  camera.position.set(0, 5.5, 13);
+  controls.target.set(0, 2.8, 0);
+  controls.minDistance = 5;
+  controls.maxDistance = 25;
+  controls.minPolarAngle = 0.4;
+  factText.classList.remove('show');
+  dirt.material.color.setHex(0x5a3a22);
+});
+
+const nightBtn = document.getElementById('nightBtn');
+let isNight = false;
+nightBtn.addEventListener('click', () => {
+  isNight = !isNight;
+  document.body.classList.toggle('night');
+  nightBtn.textContent = isNight ? 'Chế độ ban ngày' : 'Chế độ ban đêm';
+  if (isNight) {
+    skyUniforms.topColor.value.setHex(0x050a1a);
+    skyUniforms.midColor.value.setHex(0x0a1530);
+    skyUniforms.bottomColor.value.setHex(0x1a2a4a);
+    sun.intensity = 0.3;
+    sun.color.setHex(0x8899cc);
+    hemi.intensity = 0.3;
+    hemi.color.setHex(0x334466);
+    rim.intensity = 0.4;
+    fill.intensity = 0.3;
+    scene.fog.color.setHex(0x0a1520);
+    sunCore.visible = false;
+    sunGlow.visible = false;
+    moonGroup.visible = true;
+    starMat.opacity = 1;
+    clouds.forEach(c => c.children.forEach(p => p.material.color.setHex(0x445566)));
+  } else {
+    skyUniforms.topColor.value.setHex(0x1a5a8a);
+    skyUniforms.midColor.value.setHex(0x88c8e8);
+    skyUniforms.bottomColor.value.setHex(0xffd8a8);
+    sun.intensity = 2.8;
+    sun.color.setHex(0xfff0c8);
+    hemi.intensity = 1.0;
+    hemi.color.setHex(0xbde0fe);
+    rim.intensity = 1.2;
+    fill.intensity = 1.5;
+    scene.fog.color.setHex(0x1a3a3a);
+    sunCore.visible = true;
+    sunGlow.visible = true;
+    moonGroup.visible = false;
+    starMat.opacity = 0;
+    clouds.forEach(c => c.children.forEach(p => p.material.color.setHex(0xffffff)));
+  }
+});
+
+const photoBtn = document.getElementById('photoBtn');
+photoBtn.addEventListener('click', () => {
+  renderer.render(scene, camera);
+  const url = renderer.domElement.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = 'hanh-trinh-xanh-' + Date.now() + '.png';
+  link.href = url;
+  link.click();
+});
+
+function capNhatDongVat(t) {
+  clouds.forEach(c => {
+    c.position.x += c.userData.speed * 0.02;
+    if (c.position.x > 35) c.position.x = -35;
+  });
+  birds.forEach(b => {
+    b.userData.angle += b.userData.speed * 0.01;
+    b.position.x = Math.cos(b.userData.angle) * b.userData.radius;
+    b.position.z = Math.sin(b.userData.angle) * b.userData.radius;
+    b.position.y = b.userData.height + Math.sin(t * 0.5 + b.userData.phase) * 0.8;
+    b.rotation.y = -b.userData.angle + Math.PI/2;
+    const flap = Math.sin(t * 8 + b.userData.phase) * 0.6;
+    b.userData.leftWing.rotation.z = flap;
+    b.userData.rightWing.rotation.z = -flap;
+  });
+  butterflies.forEach(bf => {
+    bf.userData.angle += bf.userData.speed * 0.01;
+    bf.position.x = Math.cos(bf.userData.angle) * bf.userData.radius;
+    bf.position.z = Math.sin(bf.userData.angle) * bf.userData.radius;
+    bf.position.y = bf.userData.height + Math.sin(t * 2 + bf.userData.phase) * 0.4;
+    bf.rotation.y = -bf.userData.angle;
+    const flap = Math.sin(t * 15 + bf.userData.phase) * 0.9;
+    bf.userData.leftWing.rotation.y = Math.PI/4 + flap;
+    bf.userData.rightWing.rotation.y = -Math.PI/4 - flap;
+  });
+}
+
+function resize() {
+  const w = sceneEl.clientWidth;
+  const h = sceneEl.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+let lastTime = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const dt = Math.min(t - lastTime, 0.05);
+  lastTime = t;
+
+  if (!packing) {
+    const target = targetScale[currentStep];
+    currentScale += (target - currentScale) * Math.min(dt * 3, 1);
+    if (currentStep < 4) treeGroup.scale.setScalar(currentScale);
+  }
+
+  chayHieuUngGio(t);
+  capNhatNhanVat(dt, t);
+  capNhatDongGoi(dt);
+  capNhatDongVat(t);
+
+  if (!packing && currentStep === 4 && terrariumGroup.visible) {
+    terrariumGroup.rotation.y += dt * 0.15;
+  }
+
+  if (dropActive) {
+    dropLife += dt;
+    const pos = dropletGeo.attributes.position.array;
+    for (let i = 0; i < DROP_COUNT; i++) {
+      pos[i*3+0] += dropVel[i].x;
+      pos[i*3+1] += dropVel[i].y;
+      pos[i*3+2] += dropVel[i].z;
+      if (pos[i*3+1] < 0.05) { pos[i*3+1] = 0.05; dropVel[i].set(0,0,0); }
+    }
+    dropletGeo.attributes.position.needsUpdate = true;
+    dropMat.opacity = Math.max(0, 0.9 - dropLife * 0.3);
+    if (dropLife > 3) { dropActive = false; droplets.visible = false; dropMat.opacity = 0.9; }
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+setTimeout(() => {
+  loadingEl.style.opacity = '0';
+  setTimeout(() => loadingEl.style.display = 'none', 600);
+}, 1200);
+
+animate();
+</script>
 </body>
 </html>
